@@ -71,6 +71,8 @@ public class TankSpawner : MonoBehaviour
         // Sinh player tank ở vị trí cuối cùng
         GameObject player = SpawnTank(playerTankPrefab, allSpawnPositions[allSpawnPositions.Count - 1]);
         OnPlayerSpawned?.Invoke(player.transform);
+
+        FindObjectOfType<DynamicFlowManager>()?.UpdateTarget(player.transform.position);
     }
 
     private GameObject SpawnTank(GameObject prefab, Vector3 position)
