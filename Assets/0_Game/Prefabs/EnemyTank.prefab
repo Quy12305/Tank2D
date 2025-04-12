@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 2285722349897919609}
   - component: {fileID: 8843930661962058062}
   - component: {fileID: 8852001002028177145}
-  m_Layer: 6
+  - component: {fileID: 9142888097156680013}
+  m_Layer: 9
   m_Name: EnemyTank
   m_TagString: Tank
   m_Icon: {fileID: 0}
@@ -168,6 +169,28 @@ PolygonCollider2D:
       - {x: 0.5, y: -0.5}
       - {x: 0.5, y: 0.5}
   m_UseDelaunayMesh: 0
+--- !u!114 &9142888097156680013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2585453559287309049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dac1db4c54d9bf41861d27a99c8c6d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletSpawnPoint: {fileID: 1339429513708930542}
+  maxHealth: 100
+  healthBar: {fileID: 4428251925661842151, guid: 8abfc99d078d6eb4cb1c7a13b2a8e979, type: 3}
+  moveSpeed: 3
+  rotationSpeed: 5
+  attackDistance: 5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 4096
+  shootCooldown: 0.25
 --- !u!1 &6154022726967439393
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,7 +201,7 @@ GameObject:
   m_Component:
   - component: {fileID: 479057835718480133}
   - component: {fileID: 5949064298995147325}
-  m_Layer: 6
+  m_Layer: 9
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -262,7 +285,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1339429513708930542}
   - component: {fileID: 8693092253897441265}
-  m_Layer: 6
+  m_Layer: 9
   m_Name: Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}

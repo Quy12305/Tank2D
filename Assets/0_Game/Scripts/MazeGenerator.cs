@@ -20,6 +20,14 @@ public class MazeGenerator : MonoBehaviour
     private int[,]        map;
     private System.Random rand;
 
+    private void Start()
+    {
+        OnMapGenerationCompleted += () =>
+        {
+            DynamicFlowManager.Instance.SetMap(GetMap());
+        };
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.G))
@@ -435,44 +443,4 @@ public class MazeGenerator : MonoBehaviour
             Mathf.Clamp(y, 0, height - 1)
         );
     }
-
-
-
-    // public void GenerateDIMACSFile(string filePath)
-    // {
-    //     Vector2Int       playerPos      = GetPlayerSpawnPosition();
-    //     List<Vector2Int> enemyPositions = GetEnemySpawnPositions();
-    //
-    //     DIMACSGenerator generator = new DIMACSGenerator(map);
-    //     generator.GenerateDIMACS(filePath, playerPos, enemyPositions);
-    // }
-
-    // private Vector2Int GetPlayerSpawnPosition()
-    // {
-    //     // Chọn vị trí spawn cho player (ví dụ: ô trống đầu tiên)
-    //     for (int x = 1; x < width - 1; x++)
-    //     {
-    //         for (int y = 1; y < height - 1; y++)
-    //         {
-    //             if (map[x, y] == 0)
-    //                 return new Vector2Int(x, y);
-    //         }
-    //     }
-    //     return Vector2Int.zero;
-    // }
-    //
-    // private List<Vector2Int> GetEnemySpawnPositions()
-    // {
-    //     // Chọn ngẫu nhiên 3 vị trí trống cho enemy
-    //     List<Vector2Int> emptyCells     = GetEmptyCells();
-    //     List<Vector2Int> enemyPositions = new List<Vector2Int>();
-    //
-    //     for (int i = 0; i < 3 && emptyCells.Count > 0; i++)
-    //     {
-    //         int index = UnityEngine.Random.Range(0, emptyCells.Count);
-    //         enemyPositions.Add(emptyCells[index]);
-    //         emptyCells.RemoveAt(index);
-    //     }
-    //     return enemyPositions;
-    // }
 }

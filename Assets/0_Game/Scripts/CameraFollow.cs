@@ -20,8 +20,9 @@ public class CameraFollow : MonoBehaviour
 
     private void SetTarget(Transform playerTransform)
     {
-        target = playerTransform;
-        offset = transform.position - target.position;
+        transform.position = new Vector3(playerTransform.position.x, playerTransform.position.y, transform.position.z);
+        target             = playerTransform;
+        offset             = transform.position - target.position;
     }
 
     private void FixedUpdate()
