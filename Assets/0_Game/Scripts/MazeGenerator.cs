@@ -59,8 +59,6 @@ public class MazeGenerator : MonoBehaviour
 
         map = GenerateMap();
         GenerateMapInUnity();
-
-        // GenerateDIMACSFile("D:\\TestAssets\\DIMACS.txt");
     }
 
     private int[,] GenerateMap()

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class BotTank : TankBase
 {
     [Header("AI Settings")]
-    public float moveSpeed = 3f;
+    public float moveSpeed = 2f;
     public float rotationSpeed = 5f;
     public float attackDistance = 5f;
     public LayerMask obstacleLayer;
@@ -30,8 +30,8 @@ public class BotTank : TankBase
         rb = GetComponent<Rigidbody2D>();
         flowManager = FindObjectOfType<DynamicFlowManager>();
 
-        TankSpawner.OnPlayerSpawned += OnPlayerSpawned;
-        EventManager.OnPathsUpdated += UpdatePath;
+        TankSpawner.OnPlayerSpawned       += OnPlayerSpawned;
+        DynamicFlowManager.OnPathsUpdated += UpdatePath;
 
         GameObject foundPlayer = GameObject.FindWithTag("Player");
         if (foundPlayer != null)
@@ -69,7 +69,7 @@ public class BotTank : TankBase
             UpdatePath();
         }
 
-        CheckPlayerVisibility();
+        //CheckPlayerVisibility();
 
         if (isAttacking)
         {
@@ -157,7 +157,7 @@ public class BotTank : TankBase
 
     private void OnDestroy()
     {
-        EventManager.OnPathsUpdated -= UpdatePath;
+        DynamicFlowManager.OnPathsUpdated -= UpdatePath;
         TankSpawner.OnPlayerSpawned -= OnPlayerSpawned;
     }
 }

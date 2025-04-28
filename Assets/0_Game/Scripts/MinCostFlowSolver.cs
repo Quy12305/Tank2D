@@ -40,6 +40,12 @@ public class MinCostFlowSolver
         graph[to].Add(backward);
     }
 
+    public void AddUndirectedEdge(int from, int to, int capacity, int cost)
+    {
+        AddEdge(from, to, capacity, cost);
+        AddEdge(to, from, capacity, cost);
+    }
+
     public int[] MinCostMaxFlow(int source, int sink, int maxFlow)
     {
         int totalFlow = 0, totalCost = 0;
@@ -115,7 +121,11 @@ public class MinCostFlowSolver
                 );
 
                 if (nextEdge == null) break;
-                current = nextEdge.to;
+
+                nextEdge.flow          -= 1;
+                nextEdge.residual.flow += 1;
+
+                current                =  nextEdge.to;
             }
 
             paths.Add(path);

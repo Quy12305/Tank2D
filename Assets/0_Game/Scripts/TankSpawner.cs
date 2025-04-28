@@ -15,7 +15,6 @@ public class TankSpawner : MonoBehaviour
 
     private List<Vector3> spawnedPositions = new List<Vector3>();
     public static event System.Action<Transform> OnPlayerSpawned;
-    public event System.Action OnEnemyTanksSpawned;
 
     private void Start()
     {
@@ -55,8 +54,8 @@ public class TankSpawner : MonoBehaviour
             if (IsPositionValid(spawnPosition, allSpawnPositions))
             {
                 allSpawnPositions.Add(spawnPosition);
-                emptyCells.Remove(cell);
             }
+            emptyCells.Remove(cell);
         }
 
         // Sinh enemy tanks trước
@@ -64,9 +63,6 @@ public class TankSpawner : MonoBehaviour
         {
             SpawnTank(enemyTankPrefab, allSpawnPositions[i]);
         }
-
-        // Thông báo enemy tanks đã được sinh xong
-        OnEnemyTanksSpawned?.Invoke();
 
         // Sinh player tank ở vị trí cuối cùng
         GameObject player = SpawnTank(playerTankPrefab, allSpawnPositions[allSpawnPositions.Count - 1]);

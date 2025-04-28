@@ -17,6 +17,8 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     private Dictionary<Vector2Int, List<Vector3>> botPaths = new();
 
+    public static event System.Action OnPathsUpdated;
+
     private void Start()
     {
         StartCoroutine(WaitForMapInitialization());
@@ -150,15 +152,15 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         int sourceSuperNode = totalNodes;
         int sinkSuperNode   = totalNodes + 1;
 
-        // Thêm các edge với capacity động
+        // Thêm các edge với capacity
         foreach (var kvp in nodeMap)
         {
             foreach (var neighbor in GetNeighbors(kvp.Key, map))
             {
                 if (nodeMap.TryGetValue(neighbor, out int neighborId))
                 {
-                    // Capacity = số bot + 1 để đảm bảo đủ chỗ
-                    extendedFlow.AddEdge(kvp.Value, neighborId, sources.Count + 1, 1);
+                    // Capacity = 1 (trên mỗi cạnh ở 1 chiều chir cho 1 bot qua)
+                    extendedFlow.AddUndirectedEdge(kvp.Value, neighborId, 1, 1);
                 }
             }
         }
@@ -166,9 +168,9 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         // Kết nối super node
         foreach (int source in sources)
         {
-            extendedFlow.AddEdge(sourceSuperNode, source, 1, 0);
+            extendedFlow.AddUndirectedEdge(sourceSuperNode, source, 1, 0);
         }
-        extendedFlow.AddEdge(sink, sinkSuperNode, sources.Count, 0);
+        extendedFlow.AddUndirectedEdge(sink, sinkSuperNode, sources.Count, 0);
 
         // Tính toán flow
         var result = extendedFlow.MinCostMaxFlow(sourceSuperNode, sinkSuperNode, sources.Count);
@@ -196,7 +198,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             }
         }
 
-        EventManager.OnPathsUpdated?.Invoke();
+        OnPathsUpdated?.Invoke();
     }
 
     private List<Vector2Int> GetNeighbors(Vector2Int pos, int[,] map)
