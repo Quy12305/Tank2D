@@ -12,11 +12,6 @@ public class LevelManager : Singleton<LevelManager>
 
     int level = 1;
 
-    void Start()
-    {
-        UIManager.Instance.OpenMainMenuUI();
-    }
-
     public void LoadLevel()
     {
         LoadLevel(level);

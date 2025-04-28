@@ -123,7 +123,7 @@ PolygonCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2585453559287309049}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -186,6 +186,7 @@ MonoBehaviour:
   healthBar: {fileID: 4428251925661842151, guid: 8abfc99d078d6eb4cb1c7a13b2a8e979, type: 3}
   moveSpeed: 5
   rotateSpeed: 200
+  variableJoystick: {fileID: 0}
 --- !u!1 &6154022726967439393
 GameObject:
   m_ObjectHideFlags: 0
