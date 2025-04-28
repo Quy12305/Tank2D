@@ -1835,7 +1835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &884883894
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3380,7 +3380,7 @@ MonoBehaviour:
   enemyTankPrefab: {fileID: 2585453559287309049, guid: 0a93f87a56ab1034b93faa4ab0eac7e0, type: 3}
   playerTankPrefab: {fileID: 2585453559287309049, guid: 072385971abb0804e9b0bca0a03e4a99, type: 3}
   healthBarPrefab: {fileID: 4428251925661842151, guid: 8abfc99d078d6eb4cb1c7a13b2a8e979, type: 3}
-  numberOfEnemies: 6
+  numberOfEnemies: 1
   minDistanceBetweenTanks: 10
 --- !u!4 &1556604660
 Transform:
@@ -4742,7 +4742,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2086591973
 RectTransform:
   m_ObjectHideFlags: 0

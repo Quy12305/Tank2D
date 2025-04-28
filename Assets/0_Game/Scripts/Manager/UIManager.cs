@@ -18,32 +18,32 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenMainMenuUI()
     {
-        mainmenuUI.SetActive(true);
         CloseAllUI();
+        mainmenuUI.SetActive(true);
     }
 
     public void OpenGamePlayUI()
     {
-        gameplayUI.SetActive(false);
         CloseAllUI();
+        gameplayUI.SetActive(true);
     }
 
     public void OpenFinishUI()
     {
-        mainmenuUI.SetActive(false);
         CloseAllUI();
+        mainmenuUI.SetActive(true);
     }
 
     public void OpenLoseUI()
     {
-        loseUI.SetActive(false);
         CloseAllUI();
+        loseUI.SetActive(true);
     }
 
     public void OpenSettingUI()
     {
-        settingsUI.SetActive(false);
         CloseAllUI();
+        settingsUI.SetActive(true);
     }
 
     public void PlayButton()
@@ -55,15 +55,19 @@ public class UIManager : Singleton<UIManager>
     public void ReplayButton()
     {
         finishUI.SetActive(false);
-        //LevelManager.Instance.LoadLevel();
         LevelManager.Instance.OnStart();
     }
 
     public void NextLevelButton()
     {
-        LevelManager.Instance.NextLevel();
         finishUI.SetActive(false);
+        LevelManager.Instance.NextLevel();
         LevelManager.Instance.OnStart();
+    }
+
+    public void SettingButton()
+    {
+        settingsUI.SetActive(true);
     }
 
     public void CloseAllUI()

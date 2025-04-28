@@ -10,7 +10,7 @@ public class BotTank : TankBase
     public LayerMask obstacleLayer;
 
     [Header("Attack Settings")]
-    public float shootCooldown = 0.1f;
+    public float shootCooldown = 1f;
 
     private float lastShootTime = -Mathf.Infinity;
 
@@ -18,7 +18,6 @@ public class BotTank : TankBase
     private Transform player;
     private List<Vector3> currentPath = new List<Vector3>();
     private int currentPathIndex = 0;
-    private Rigidbody2D rb;
     private bool isAttacking = false;
 
     private float pathUpdateTimer = 0f;
@@ -69,7 +68,7 @@ public class BotTank : TankBase
             UpdatePath();
         }
 
-        //CheckPlayerVisibility();
+        CheckPlayerVisibility();
 
         if (isAttacking)
         {

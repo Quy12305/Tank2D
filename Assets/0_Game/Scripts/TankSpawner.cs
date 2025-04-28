@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class TankSpawner : MonoBehaviour
+public class TankSpawner : Singleton<TankSpawner>
 {
     [Header("References")]
     [SerializeField] private MazeGenerator mazeGenerator;
@@ -10,7 +10,7 @@ public class TankSpawner : MonoBehaviour
     [SerializeField] private HealthBar healthBarPrefab;
 
     [Header("Spawn Settings")]
-    [SerializeField] [Range(1, 10)] private int numberOfEnemies = 1;
+    [Range(1, 10)] public int numberOfEnemies = 1;
     [SerializeField] private float minDistanceBetweenTanks = 2f;
 
     private List<Vector3> spawnedPositions = new List<Vector3>();
@@ -74,11 +74,12 @@ public class TankSpawner : MonoBehaviour
     private GameObject SpawnTank(GameObject prefab, Vector3 position)
     {
         // Tạo Tank
-        GameObject tank = Instantiate(prefab, position, Quaternion.identity);
+        GameObject tank = Instantiate(prefab, position, Quaternion.identity, transform);
 
         // Tạo HealthBar và liên kết với Tank
-        HealthBar healthBar = Instantiate(healthBarPrefab, position, Quaternion.identity);
+        HealthBar healthBar = Instantiate(healthBarPrefab, position, Quaternion.identity, transform);
         healthBar.OnInit(100f, tank.transform);
+        tank.GetComponent<TankBase>().healthBar = healthBar;
 
         spawnedPositions.Add(position);
         return tank;

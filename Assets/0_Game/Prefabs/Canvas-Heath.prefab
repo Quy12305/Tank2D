@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   imageFill: {fileID: 1036547162855227487}
-  tank: {fileID: 0}
+  targetTank: {fileID: 0}
   offset: {x: 0, y: 1, z: 0}
 --- !u!1 &6675037171168748550
 GameObject:
@@ -184,7 +184,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -861096853, guid: 35208a66c997dd44bac810d15f352e32, type: 3}
+  m_Sprite: {fileID: -4275900, guid: 070356e9d8e81ba4ea1ac65d26e9a564, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -252,14 +252,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 259076893, guid: 35208a66c997dd44bac810d15f352e32, type: 3}
+  m_Sprite: {fileID: -4275900, guid: 070356e9d8e81ba4ea1ac65d26e9a564, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

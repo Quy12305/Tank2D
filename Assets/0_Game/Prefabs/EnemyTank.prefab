@@ -183,14 +183,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletSpawnPoint: {fileID: 1339429513708930542}
   maxHealth: 100
-  healthBar: {fileID: 4428251925661842151, guid: 8abfc99d078d6eb4cb1c7a13b2a8e979, type: 3}
+  healthBar: {fileID: 0}
   moveSpeed: 2
   rotationSpeed: 5
   attackDistance: 5
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 4096
-  shootCooldown: 0.4
+  shootCooldown: 1
 --- !u!1 &6154022726967439393
 GameObject:
   m_ObjectHideFlags: 0
