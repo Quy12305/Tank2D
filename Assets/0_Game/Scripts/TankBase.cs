@@ -4,7 +4,7 @@ using UnityEngine;
 public abstract class TankBase : MonoBehaviour
 {
     [Header("Common Settings")] public Transform bulletSpawnPoint;
-    public                             float     maxHealth = 100f;
+    public                             float     maxHealth;
     public                             HealthBar healthBar;
 
     protected ObjectPool  objectPool;

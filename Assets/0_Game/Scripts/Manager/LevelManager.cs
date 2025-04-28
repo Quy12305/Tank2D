@@ -5,35 +5,27 @@ using UnityEngine;
 
 public class LevelManager : Singleton<LevelManager>
 {
-    public List<Level> levels = new List<Level>();
-    Level currentLevel;
+    public  List<LevelData> levels = new List<LevelData>();
+    private Level           currentLevel;
 
     public Level CurrentLevel => currentLevel;
 
-    int level = 1;
+    private int levelIndex = 0;
 
     public void LoadLevel()
     {
-        LoadLevel(level);
-        OnInit();
-    }
-    public void LoadLevel(int index)
-    {
         if (currentLevel != null)
         {
-            Destroy(currentLevel.gameObject);
+            currentLevel.DeleteAllData();
         }
-        currentLevel = Instantiate(levels[index - 1]);
-    }
 
-    public void OnInit()
-    {
-
+        MazeGenerator.Instance.CreateMap();
     }
 
     public void OnStart()
     {
         GameManager.Instance.ChangeState(GameState.GamePlay);
+        SetDataToGenMapAndBot();
         LoadLevel();
     }
 
@@ -43,16 +35,33 @@ public class LevelManager : Singleton<LevelManager>
         GameManager.Instance.ChangeState(GameState.Finish);
     }
 
+    public void OnLose()
+    {
+        UIManager.Instance.OpenLoseUI();
+        GameManager.Instance.ChangeState(GameState.Lose);
+    }
+
     public void NextLevel()
     {
-        if (level < 2)
+        if (this.levelIndex < levels.Count)
         {
-            level++;
+            this.levelIndex++;
         }
 
         else
         {
-            level = 1;
+            this.levelIndex = 0;
         }
+    }
+
+    public void SetDataToGenMapAndBot()
+    {
+        MazeGenerator.Instance.width            = levels[this.levelIndex - 1].width;
+        MazeGenerator.Instance.height           = levels[this.levelIndex - 1].height;
+        MazeGenerator.Instance.wallDensity      = levels[this.levelIndex - 1].wallDensity;
+        MazeGenerator.Instance.minWallLength    = levels[this.levelIndex - 1].minWallLength;
+        MazeGenerator.Instance.maxWallLength    = levels[this.levelIndex - 1].maxWallLength;
+        MazeGenerator.Instance.maxWallThickness = levels[this.levelIndex - 1].maxWallThickness;
+        TankSpawner.Instance.numberOfEnemies    = levels[this.levelIndex - 1].botCount;
     }
 }

@@ -4,14 +4,39 @@ using UnityEngine;
 
 public class Level : MonoBehaviour
 {
-    [SerializeField] private Vector2 startPoint;
-
-    public Vector2 StartPoint => startPoint;
+    public GameObject map;
+    public GameObject BotAndPlayer;
 
     public bool CheckWin()
     {
-        bool checkwin = true;
+        BotTank[] botTanks = FindObjectsOfType<BotTank>();
+        if (botTanks.Length > 0)
+        {
+            return false;
+        }
 
-        return checkwin;
+        return true;
+    }
+
+    public void DeleteAllData()
+    {
+        if (map != null)
+        {
+            DestroyAllChildren(map.transform);
+        }
+
+        if (BotAndPlayer != null)
+        {
+            DestroyAllChildren(BotAndPlayer.transform);
+        }
+    }
+
+    private void DestroyAllChildren(Transform parent)
+    {
+        // Tạo danh sách tạm để tránh lỗi khi xóa trong lúc lặp
+        foreach (Transform child in parent)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }

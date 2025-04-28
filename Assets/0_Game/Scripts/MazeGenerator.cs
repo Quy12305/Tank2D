@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MazeGenerator : MonoBehaviour
+public class MazeGenerator : Singleton<MazeGenerator>
 {
     [SerializeField]         private GameObject MapContainer;
     [Header("Map Settings")] public  int        width    = 32;

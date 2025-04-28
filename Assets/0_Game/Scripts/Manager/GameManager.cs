@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum GameState { MainMenu, GamePlay, Finish }
+public enum GameState { MainMenu, GamePlay, Finish, Lose}
 public class GameManager : Singleton<GameManager>
 {
     private GameState state;
@@ -23,4 +23,3 @@ public class GameManager : Singleton<GameManager>
     }
 
 }
-
