@@ -6,15 +6,18 @@ using UnityEngine;
 
 public class UIManager : Singleton<UIManager>
 {
-    [SerializeField] private GameObject mainmenuUI;
-    [SerializeField] private GameObject winUI;
-    [SerializeField] private GameObject loseUI;
-    [SerializeField] private GameObject settingsUI;
-    [SerializeField] private GameObject gameplayUI;
-    [SerializeField] private GameObject modeUI;
-    [SerializeField] private TMP_Text   textBotInMap;
-    [SerializeField] private GameObject ButtonSettingWhilePlay;
-    [SerializeField] private GameObject ButtonSettingWhileMenu;
+    [SerializeField] private GameObject      mainmenuUI;
+    [SerializeField] private GameObject      winUI;
+    [SerializeField] private GameObject      loseUI;
+    [SerializeField] private GameObject      settingsUI;
+    [SerializeField] private GameObject      gameplayUI;
+    [SerializeField] private GameObject      modeUI;
+    [SerializeField] private TMP_Text        textBotInMap;
+    [SerializeField] private GameObject      ButtonSettingWhilePlay;
+    [SerializeField] private GameObject      ButtonSettingWhileMenu;
+    [SerializeField] private List<LevelData> listLevelDataEasyMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataNomarlMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataHardMode = new List<LevelData>();
 
     private void Start()
     {
@@ -25,12 +28,14 @@ public class UIManager : Singleton<UIManager>
     {
         this.CloseAllUI();
         this.mainmenuUI.SetActive(true);
+        Time.timeScale = 1f;
     }
 
     public void OpenGamePlayUI()
     {
         this.CloseAllUI();
         this.gameplayUI.SetActive(true);
+        Time.timeScale = 1f;
     }
 
     public void OpenFinishUI()
@@ -47,6 +52,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenSettingUI()
     {
+        Time.timeScale = 0f;
         this.settingsUI.SetActive(true);
         if (GameManager.Instance.IsState(GameState.MainMenu))
         {
@@ -64,6 +70,7 @@ public class UIManager : Singleton<UIManager>
     {
         this.CloseAllUI();
         this.modeUI.SetActive(true);
+        Time.timeScale = 1f;
     }
 
     public void PlayButton()
@@ -75,12 +82,14 @@ public class UIManager : Singleton<UIManager>
     public void ReplayButton()
     {
         this.winUI.SetActive(false);
+        Time.timeScale = 1f;
         LevelManager.Instance.OnStart();
     }
 
     public void NextButton()
     {
         this.winUI.SetActive(false);
+        Time.timeScale = 1f;
         LevelManager.Instance.NextLevel();
         LevelManager.Instance.OnStart();
     }
@@ -94,32 +103,41 @@ public class UIManager : Singleton<UIManager>
 
     public void PauseGame()
     {
-
+        Time.timeScale = 0f;
     }
 
     public void Continue(GameObject UI)
     {
         this.Exit(UI);
+        Time.timeScale = 1f;
     }
 
     public void EasyModeButton(GameObject UI)
     {
+        LevelManager.Instance.SetLevelData(this.listLevelDataEasyMode);
         this.Exit(UI);
+        Time.timeScale = 1f;
     }
 
     public void NomarlModeButton(GameObject UI)
     {
+        LevelManager.Instance.SetLevelData(this.listLevelDataNomarlMode);
         this.Exit(UI);
+        Time.timeScale = 1f;
     }
 
     public void HardModeButton(GameObject UI)
     {
+        LevelManager.Instance.SetLevelData(this.listLevelDataHardMode);
         this.Exit(UI);
+        Time.timeScale = 1f;
     }
 
     public void Exit(GameObject UI)
     {
         UI.SetActive(false);
+        Time.timeScale = 1f;
+
     }
 
     public void UpdateTextBotInMap()

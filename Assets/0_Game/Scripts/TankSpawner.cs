@@ -11,7 +11,7 @@ public class TankSpawner : Singleton<TankSpawner>
 
     [Header("Spawn Settings")]
     [Range(1, 10)] public int numberOfEnemies = 1;
-    [SerializeField] private float minDistanceBetweenTanks = 2f;
+    [SerializeField] public float minDistanceBetweenTanks = 2f;
 
     private List<Vector3> spawnedPositions = new List<Vector3>();
     public static event System.Action<Transform> OnPlayerSpawned;
