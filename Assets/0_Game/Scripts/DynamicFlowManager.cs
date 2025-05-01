@@ -60,8 +60,8 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     private void InitializeFlow(int[,] map)
     {
         this.map = map;
-        width    = mazeGenerator.width;
-        height   = mazeGenerator.height;
+        width    = mazeGenerator.height;
+        height   = mazeGenerator.width;
         int totalNodes = width * height;
         flow = new MinCostFlowSolver(totalNodes);
         nodeMap.Clear();

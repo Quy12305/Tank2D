@@ -54,14 +54,21 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
+    public void SetLevelData(List<LevelData> levelData)
+    {
+        levels.Clear();
+        levels.AddRange(levelData);
+    }
+
     public void SetDataToGenMapAndBot()
     {
-        MazeGenerator.Instance.width            = levels[this.levelIndex - 1].width;
-        MazeGenerator.Instance.height           = levels[this.levelIndex - 1].height;
-        MazeGenerator.Instance.wallDensity      = levels[this.levelIndex - 1].wallDensity;
-        MazeGenerator.Instance.minWallLength    = levels[this.levelIndex - 1].minWallLength;
-        MazeGenerator.Instance.maxWallLength    = levels[this.levelIndex - 1].maxWallLength;
-        MazeGenerator.Instance.maxWallThickness = levels[this.levelIndex - 1].maxWallThickness;
-        TankSpawner.Instance.numberOfEnemies    = levels[this.levelIndex - 1].botCount;
+        MazeGenerator.Instance.height                = levels[this.levelIndex].height;
+        MazeGenerator.Instance.width                = levels[this.levelIndex].width;
+        MazeGenerator.Instance.wallDensity           = levels[this.levelIndex].wallDensity;
+        MazeGenerator.Instance.minWallLength         = levels[this.levelIndex].minWallLength;
+        MazeGenerator.Instance.maxWallLength         = levels[this.levelIndex].maxWallLength;
+        MazeGenerator.Instance.maxWallThickness      = levels[this.levelIndex].maxWallThickness;
+        TankSpawner.Instance.numberOfEnemies         = levels[this.levelIndex].botCount;
+        TankSpawner.Instance.minDistanceBetweenTanks = levels[this.levelIndex].distanceBetweenBots;
     }
 }
