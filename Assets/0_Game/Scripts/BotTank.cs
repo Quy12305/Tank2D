@@ -159,4 +159,10 @@ public class BotTank : TankBase
         DynamicFlowManager.OnPathsUpdated -= UpdatePath;
         TankSpawner.OnPlayerSpawned -= OnPlayerSpawned;
     }
+
+    protected override void OnDeath()
+    {
+        base.OnDeath();
+        UIManager.Instance.UpdateTextBotInMap();
+    }
 }

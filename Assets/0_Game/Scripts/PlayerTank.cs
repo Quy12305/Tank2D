@@ -76,4 +76,11 @@ public class PlayerTank : TankBase
             Shoot();
         }
     }
+
+    protected override void OnDeath()
+    {
+        base.OnDeath();
+        GameManager.Instance.ChangeState(GameState.Lose);
+        UIManager.Instance.OpenLoseUI();
+    }
 }

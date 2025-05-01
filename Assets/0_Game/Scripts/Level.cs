@@ -14,8 +14,13 @@ public class Level : MonoBehaviour
         {
             return false;
         }
-
         return true;
+    }
+
+    public int BotInMap()
+    {
+        BotTank[] botTanks = FindObjectsOfType<BotTank>();
+        return botTanks.Length;
     }
 
     public void DeleteAllData()
