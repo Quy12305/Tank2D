@@ -6,16 +6,16 @@ using System.Linq;
 public class MazeGenerator : Singleton<MazeGenerator>
 {
     [SerializeField]         private GameObject MapContainer;
-    [Header("Map Settings")] public  int        width    = 32;
-    public                           int        height   = 18;
-    public                           float      tileSize = 1f;
+    [Header("Map Settings")] public  int        width;
+    public                           int        height;
+    public                           float      tileSize;
     public                           GameObject wallPrefab;
     public event Action                         OnMapGenerationCompleted;
 
-    [Header("Generation Settings")] [Range(0, 100)] public int wallDensity      = 25;
-    [Range(2, 8)]                                   public int minWallLength    = 3;
-    [Range(3, 12)]                                  public int maxWallLength    = 7;
-    [Range(1, 3)]                                   public int maxWallThickness = 1;
+    [Header("Generation Settings")] [Range(0, 100)] public int wallDensity;
+    [Range(2, 8)]                                   public int minWallLength;
+    [Range(3, 12)]                                  public int maxWallLength;
+    [Range(1, 3)]                                   public int maxWallThickness;
 
     private int[,]        map;
     private System.Random rand;

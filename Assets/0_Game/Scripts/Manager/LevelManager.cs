@@ -32,7 +32,7 @@ public class LevelManager : Singleton<LevelManager>
     public void OnFinish()
     {
         UIManager.Instance.OpenFinishUI();
-        GameManager.Instance.ChangeState(GameState.Finish);
+        GameManager.Instance.ChangeState(GameState.Win);
     }
 
     public void OnLose()

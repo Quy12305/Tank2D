@@ -55,7 +55,7 @@ public abstract class TankBase : MonoBehaviour
         }
     }
 
-    public virtual void TakeDamage(float damage)
+    public void TakeDamage(float damage)
     {
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
 
@@ -66,7 +66,13 @@ public abstract class TankBase : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Destroy(gameObject);
+            this.OnDeath();
         }
+    }
+
+    protected virtual void OnDeath()
+    {
+        Destroy(this.healthBar.gameObject);
+        Destroy(this.gameObject);
     }
 }

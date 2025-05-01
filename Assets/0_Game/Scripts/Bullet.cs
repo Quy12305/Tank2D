@@ -46,6 +46,12 @@ public class Bullet : MonoBehaviour
             {
                 pool.ReturnObject(gameObject);
             }
+
+            if (LevelManager.Instance.CurrentLevel.CheckWin())
+            {
+                GameManager.Instance.ChangeState(GameState.Win);
+                UIManager.Instance.OpenFinishUI();
+            }
         }
     }
 
