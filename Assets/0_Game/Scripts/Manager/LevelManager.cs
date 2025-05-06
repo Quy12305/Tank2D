@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -6,7 +7,7 @@ using UnityEngine;
 public class LevelManager : Singleton<LevelManager>
 {
     public  List<LevelData> levels = new List<LevelData>();
-    private Level           currentLevel;
+    [SerializeField] private Level           currentLevel;
 
     public Level CurrentLevel => currentLevel;
 

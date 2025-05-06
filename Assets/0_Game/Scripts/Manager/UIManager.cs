@@ -28,7 +28,6 @@ public class UIManager : Singleton<UIManager>
     {
         this.CloseAllUI();
         this.mainmenuUI.SetActive(true);
-        Time.timeScale = 1f;
     }
 
     public void OpenGamePlayUI()
@@ -116,21 +115,21 @@ public class UIManager : Singleton<UIManager>
     {
         LevelManager.Instance.SetLevelData(this.listLevelDataEasyMode);
         this.Exit(UI);
-        Time.timeScale = 1f;
+        this.OpenMainMenuUI();
     }
 
     public void NomarlModeButton(GameObject UI)
     {
         LevelManager.Instance.SetLevelData(this.listLevelDataNomarlMode);
         this.Exit(UI);
-        Time.timeScale = 1f;
+        this.OpenMainMenuUI();
     }
 
     public void HardModeButton(GameObject UI)
     {
         LevelManager.Instance.SetLevelData(this.listLevelDataHardMode);
         this.Exit(UI);
-        Time.timeScale = 1f;
+        this.OpenMainMenuUI();
     }
 
     public void Exit(GameObject UI)
