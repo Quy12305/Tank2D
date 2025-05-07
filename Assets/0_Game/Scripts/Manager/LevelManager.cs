@@ -1,17 +1,45 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+
+public enum Mode
+{
+    Easy,
+    Nomarl,
+    Hard
+}
 
 public class LevelManager : Singleton<LevelManager>
 {
-    public  List<LevelData> levels = new List<LevelData>();
-    [SerializeField] private Level           currentLevel;
+    public List<LevelData> levels = new List<LevelData>();
 
+    [SerializeField] private Level currentLevel;
+    [SerializeField] private Mode currentMode;
     public Level CurrentLevel => currentLevel;
+    public Mode CurrentMode { get => currentMode; set => currentMode = value; }
 
     private int levelIndex = 0;
+
+    [SerializeField] private List<LevelData> listLevelDataEasyMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataNomarlMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataHardMode = new List<LevelData>();
+
+    private Dictionary<Mode, List<LevelData>> modeLevelData;
+
+    private void Awake()
+    {
+        SaveSystem.LoadGame();
+        currentMode = GameDataLevel.Instance.currentMode;
+
+        modeLevelData = new Dictionary<Mode, List<LevelData>>
+        {
+            { Mode.Easy, listLevelDataEasyMode },
+            { Mode.Nomarl, listLevelDataNomarlMode },
+            { Mode.Hard, listLevelDataHardMode }
+        };
+
+        SetLevelData(currentMode);
+        levelIndex = GameDataLevel.Instance.LevelIndexByMode[currentMode];
+    }
 
     public void LoadLevel()
     {
@@ -44,32 +72,39 @@ public class LevelManager : Singleton<LevelManager>
 
     public void NextLevel()
     {
-        if (this.levelIndex < levels.Count)
+        if (levelIndex < levels.Count - 1)
         {
-            this.levelIndex++;
+            levelIndex++;
+            GameDataLevel.Instance.LevelIndexByMode[currentMode]++;
         }
-
         else
         {
-            this.levelIndex = 0;
+            levelIndex = 0;
+            GameDataLevel.Instance.LevelIndexByMode[currentMode] = 0;
         }
+        SaveSystem.SaveGame();
     }
 
-    public void SetLevelData(List<LevelData> levelData)
+    public void SetLevelData(Mode mode)
     {
-        levels.Clear();
-        levels.AddRange(levelData);
+        if (modeLevelData.TryGetValue(mode, out var levelList))
+        {
+            levels.Clear();
+            levels.AddRange(levelList);
+            levelIndex = GameDataLevel.Instance.LevelIndexByMode[mode];
+        }
     }
 
     public void SetDataToGenMapAndBot()
     {
-        MazeGenerator.Instance.height                = levels[this.levelIndex].height;
-        MazeGenerator.Instance.width                = levels[this.levelIndex].width;
-        MazeGenerator.Instance.wallDensity           = levels[this.levelIndex].wallDensity;
-        MazeGenerator.Instance.minWallLength         = levels[this.levelIndex].minWallLength;
-        MazeGenerator.Instance.maxWallLength         = levels[this.levelIndex].maxWallLength;
-        MazeGenerator.Instance.maxWallThickness      = levels[this.levelIndex].maxWallThickness;
-        TankSpawner.Instance.numberOfEnemies         = levels[this.levelIndex].botCount;
-        TankSpawner.Instance.minDistanceBetweenTanks = levels[this.levelIndex].distanceBetweenBots;
+        var levelData = levels[levelIndex];
+        MazeGenerator.Instance.height = levelData.height;
+        MazeGenerator.Instance.width = levelData.width;
+        MazeGenerator.Instance.wallDensity = levelData.wallDensity;
+        MazeGenerator.Instance.minWallLength = levelData.minWallLength;
+        MazeGenerator.Instance.maxWallLength = levelData.maxWallLength;
+        MazeGenerator.Instance.maxWallThickness = levelData.maxWallThickness;
+        TankSpawner.Instance.numberOfEnemies = levelData.botCount;
+        TankSpawner.Instance.minDistanceBetweenTanks = levelData.distanceBetweenBots;
     }
 }

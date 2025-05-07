@@ -80,7 +80,6 @@ public class PlayerTank : TankBase
     protected override void OnDeath()
     {
         base.OnDeath();
-        GameManager.Instance.ChangeState(GameState.Lose);
-        UIManager.Instance.OpenLoseUI();
+        LevelManager.Instance.OnLose();
     }
 }
