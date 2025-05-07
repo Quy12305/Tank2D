@@ -49,8 +49,7 @@ public class Bullet : MonoBehaviour
 
             if (LevelManager.Instance.CurrentLevel.CheckWin())
             {
-                GameManager.Instance.ChangeState(GameState.Win);
-                UIManager.Instance.OpenFinishUI();
+                LevelManager.Instance.OnFinish();
             }
         }
     }

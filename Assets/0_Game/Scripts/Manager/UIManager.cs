@@ -15,9 +15,6 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private TMP_Text        textBotInMap;
     [SerializeField] private GameObject      ButtonSettingWhilePlay;
     [SerializeField] private GameObject      ButtonSettingWhileMenu;
-    [SerializeField] private List<LevelData> listLevelDataEasyMode = new List<LevelData>();
-    [SerializeField] private List<LevelData> listLevelDataNomarlMode = new List<LevelData>();
-    [SerializeField] private List<LevelData> listLevelDataHardMode = new List<LevelData>();
 
     private void Start()
     {
@@ -113,21 +110,31 @@ public class UIManager : Singleton<UIManager>
 
     public void EasyModeButton(GameObject UI)
     {
-        LevelManager.Instance.SetLevelData(this.listLevelDataEasyMode);
-        this.Exit(UI);
-        this.OpenMainMenuUI();
+        LevelManager.Instance.SetLevelData(Mode.Easy);
+        LevelManager.Instance.CurrentMode  = Mode.Easy;
+        GameDataLevel.Instance.currentMode = Mode.Easy;
+        ExitUIforMode(UI);
     }
 
     public void NomarlModeButton(GameObject UI)
     {
-        LevelManager.Instance.SetLevelData(this.listLevelDataNomarlMode);
-        this.Exit(UI);
-        this.OpenMainMenuUI();
+        LevelManager.Instance.SetLevelData(Mode.Nomarl);
+        LevelManager.Instance.CurrentMode = Mode.Nomarl;
+        GameDataLevel.Instance.currentMode = Mode.Nomarl;
+        ExitUIforMode(UI);
     }
 
     public void HardModeButton(GameObject UI)
     {
-        LevelManager.Instance.SetLevelData(this.listLevelDataHardMode);
+        LevelManager.Instance.SetLevelData(Mode.Hard);
+        LevelManager.Instance.CurrentMode = Mode.Hard;
+        GameDataLevel.Instance.currentMode = Mode.Hard;
+        ExitUIforMode(UI);
+    }
+
+    public void ExitUIforMode(GameObject UI)
+    {
+        SaveSystem.SaveGame();
         this.Exit(UI);
         this.OpenMainMenuUI();
     }
