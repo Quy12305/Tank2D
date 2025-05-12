@@ -3619,6 +3619,7 @@ MonoBehaviour:
   width: 25
   tileSize: 1
   wallPrefab: {fileID: 5820753225431595450, guid: a5af492b787350745ba28254cfa46f3b, type: 3}
+  pathPrefab: {fileID: 5820753225431595450, guid: 33562af15b57e934b9f4597a74de00c3, type: 3}
   wallDensity: 26
   minWallLength: 3
   maxWallLength: 7

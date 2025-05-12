@@ -58,17 +58,17 @@ public class TankSpawner : Singleton<TankSpawner>
             emptyCells.Remove(cell);
         }
 
-        // Sinh enemy tanks trước
-        for (int i = 0; i < numberOfEnemies; i++)
-        {
-            SpawnTank(enemyTankPrefab, allSpawnPositions[i]);
-        }
-
-        // Sinh player tank ở vị trí cuối cùng
+        // Sinh player tank
         GameObject player = SpawnTank(playerTankPrefab, allSpawnPositions[allSpawnPositions.Count - 1]);
         OnPlayerSpawned?.Invoke(player.transform);
 
         FindObjectOfType<DynamicFlowManager>()?.UpdateTarget(player.transform.position);
+
+        // Sinh enemy tanks
+        for (int i = 0; i < numberOfEnemies; i++)
+        {
+            SpawnTank(enemyTankPrefab, allSpawnPositions[i]);
+        }
     }
 
     private GameObject SpawnTank(GameObject prefab, Vector3 position)

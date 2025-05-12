@@ -77,22 +77,20 @@ public class UIManager : Singleton<UIManager>
 
     public void ReplayButton()
     {
-        this.winUI.SetActive(false);
-        Time.timeScale = 1f;
+        this.OpenGamePlayUI();
         LevelManager.Instance.OnStart();
     }
 
     public void NextButton()
     {
-        this.winUI.SetActive(false);
-        Time.timeScale = 1f;
+        this.OpenGamePlayUI();
         LevelManager.Instance.NextLevel();
         LevelManager.Instance.OnStart();
     }
 
     public void HomeButton()
     {
-        this.PauseGame();
+        LevelManager.Instance.CurrentLevel.DeleteAllData();
         GameManager.Instance.ChangeState(GameState.MainMenu);
         this.OpenMainMenuUI();
     }
@@ -134,7 +132,7 @@ public class UIManager : Singleton<UIManager>
 
     public void ExitUIforMode(GameObject UI)
     {
-        SaveSystem.SaveGame();
+        SaveLoadManager.Instance.SaveGame();
         this.Exit(UI);
         this.OpenMainMenuUI();
     }

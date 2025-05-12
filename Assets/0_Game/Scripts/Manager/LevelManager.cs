@@ -27,7 +27,7 @@ public class LevelManager : Singleton<LevelManager>
 
     private void Awake()
     {
-        SaveSystem.LoadGame();
+        SaveLoadManager.Instance.LoadGame();
         currentMode = GameDataLevel.Instance.currentMode;
 
         modeLevelData = new Dictionary<Mode, List<LevelData>>
@@ -82,7 +82,7 @@ public class LevelManager : Singleton<LevelManager>
             levelIndex = 0;
             GameDataLevel.Instance.LevelIndexByMode[currentMode] = 0;
         }
-        SaveSystem.SaveGame();
+        SaveLoadManager.Instance.SaveGame();
     }
 
     public void SetLevelData(Mode mode)
