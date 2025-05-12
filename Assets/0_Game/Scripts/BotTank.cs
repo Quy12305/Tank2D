@@ -14,8 +14,8 @@ public class BotTank : TankBase
 
     private float lastShootTime = -Mathf.Infinity;
 
-    private DynamicFlowManager flowManager;
-    private Transform player;
+    public DynamicFlowManager flowManager;
+    public Transform player;
     private List<Vector3> currentPath = new List<Vector3>();
     private int currentPathIndex = 0;
     private bool isAttacking = false;
@@ -92,7 +92,7 @@ public class BotTank : TankBase
         }
 
         // Debug ray
-        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+        Vector3 rayStart = transform.position;
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
         Debug.DrawRay(rayStart, directionToPlayer * 100f, Color.red);
     }

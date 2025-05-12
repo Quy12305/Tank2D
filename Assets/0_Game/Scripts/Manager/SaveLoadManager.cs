@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-public class SaveLoadManager : MonoBehaviour
+public class SaveLoadManager : Singleton<SaveLoadManager>
 {
     public GameDataLevel levelManager;
 

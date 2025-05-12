@@ -8,8 +8,9 @@ public class MazeGenerator : Singleton<MazeGenerator>
     [SerializeField]         private GameObject MapContainer;
     [Header("Map Settings")] public  int        height;
     public                           int        width;
-    public                           float      tileSize;
-    public                           GameObject wallPrefab;
+    [SerializeField] private         float      tileSize;
+    [SerializeField] private         GameObject wallPrefab;
+    [SerializeField] private         GameObject pathPrefab;
     public event Action                         OnMapGenerationCompleted;
 
     [Header("Generation Settings")] [Range(0, 100)] public int wallDensity;
@@ -68,19 +69,19 @@ public class MazeGenerator : Singleton<MazeGenerator>
         // Tạo viền map
         for (int i = 0; i < this.height; i++)
         {
-            map[i, 0]               = 1;
+            map[i, 0]              = 1;
             map[i, this.width - 1] = 1;
         }
         for (int j = 0; j < this.width; j++)
         {
-            map[0, j]                = 1;
+            map[0, j]               = 1;
             map[this.height - 1, j] = 1;
         }
 
         // Tạo tường ngẫu nhiên
-        for (int i = 1; i < this.height - 1; i += 2)
+        for (int i = 1; i < this.height - 1; i += 3)
         {
-            for (int j = 1; j < this.width - 1; j += 2)
+            for (int j = 1; j < this.width - 1; j += 3)
             {
                 if (rand.Next(100) < wallDensity)
                 {
@@ -369,16 +370,23 @@ public class MazeGenerator : Singleton<MazeGenerator>
         {
             for (int j = 0; j < this.width; j++)
             {
+                Vector3 position = new Vector3(
+                    i * tileSize + offsetX + tileSize / 2,
+                    j * tileSize + offsetY + tileSize / 2,
+                    0f
+                );
+
                 if (map[i, j] == 1)
                 {
-                    Vector3 position = new Vector3(
-                        i * tileSize + offsetX + tileSize / 2,
-                        j * tileSize + offsetY + tileSize / 2,
-                        0f
-                    );
                     GameObject wall = Instantiate(wallPrefab, position, Quaternion.identity);
                     wall.transform.localScale = new Vector3(tileSize, tileSize, 1f);
                     wall.transform.parent     = mapParent;
+                }
+                else
+                {
+                    GameObject path = Instantiate(pathPrefab, position, Quaternion.identity);
+                    path.transform.localScale = new Vector3(tileSize, tileSize, 1f);
+                    path.transform.parent     = mapParent;
                 }
             }
         }
@@ -425,7 +433,6 @@ public class MazeGenerator : Singleton<MazeGenerator>
     }
 
     public int[,] GetMap() => map;
-
 
     public Vector2Int WorldToGridPosition(Vector3 worldPos)
     {
