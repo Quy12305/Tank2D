@@ -8,7 +8,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
     [SerializeField]         private GameObject MapContainer;
     [Header("Map Settings")] public  int        height;
     public                           int        width;
-    [SerializeField] private         float      tileSize;
+    public                           float      tileSize;
     [SerializeField] private         GameObject wallPrefab;
     [SerializeField] private         GameObject pathPrefab;
     public event Action                         OnMapGenerationCompleted;

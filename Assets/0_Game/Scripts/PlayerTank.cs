@@ -28,30 +28,30 @@ public class PlayerTank : TankBase
     private void HandleMovement()
     {
         //Di chuyển bằng mũi tên
-        // float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
-        // float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
-        //
-        // rb.velocity = transform.up * moveInput;
-        // transform.Rotate(0, 0, -rotateInput);
+        float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
+        float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+
+        rb.velocity = transform.up * moveInput;
+        transform.Rotate(0, 0, -rotateInput);
 
         //Di chuyển bằng joystick
-        Vector2 direction = variableJoystick.Direction;
-
-        if (direction.magnitude > 0.1f)
-        {
-            //Xoay tank
-            float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0, 0, -targetAngle);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
-
-            // Di chuyển tank
-            rb.velocity = transform.up * moveSpeed * direction.magnitude;
-        }
-        else
-        {
-            // Dừng lại khi không có input
-            rb.velocity = Vector2.zero;
-        }
+        // Vector2 direction = variableJoystick.Direction;
+        //
+        // if (direction.magnitude > 0.1f)
+        // {
+        //     //Xoay tank
+        //     float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
+        //     Quaternion targetRotation = Quaternion.Euler(0, 0, -targetAngle);
+        //     transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+        //
+        //     // Di chuyển tank
+        //     rb.velocity = transform.up * moveSpeed * direction.magnitude;
+        // }
+        // else
+        // {
+        //     // Dừng lại khi không có input
+        //     rb.velocity = Vector2.zero;
+        // }
 
         Vector2Int newPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
         if (newPlayerGridPos != currentPlayerGridPos)
