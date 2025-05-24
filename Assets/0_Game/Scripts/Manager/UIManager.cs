@@ -37,7 +37,7 @@ public class UIManager : Singleton<UIManager>
     public void OpenFinishUI()
     {
         this.CloseAllUI();
-        this.mainmenuUI.SetActive(true);
+        this.winUI.SetActive(true);
     }
 
     public void OpenLoseUI()
@@ -48,7 +48,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenSettingUI()
     {
-        Time.timeScale = 0f;
+        PauseGame();
         this.settingsUI.SetActive(true);
         if (GameManager.Instance.IsState(GameState.MainMenu))
         {
@@ -66,7 +66,6 @@ public class UIManager : Singleton<UIManager>
     {
         this.CloseAllUI();
         this.modeUI.SetActive(true);
-        Time.timeScale = 1f;
     }
 
     public void PlayButton()
@@ -90,7 +89,6 @@ public class UIManager : Singleton<UIManager>
 
     public void HomeButton()
     {
-        LevelManager.Instance.CurrentLevel.DeleteAllData();
         GameManager.Instance.ChangeState(GameState.MainMenu);
         this.OpenMainMenuUI();
     }
@@ -103,7 +101,6 @@ public class UIManager : Singleton<UIManager>
     public void Continue(GameObject UI)
     {
         this.Exit(UI);
-        Time.timeScale = 1f;
     }
 
     public void EasyModeButton(GameObject UI)
@@ -141,17 +138,16 @@ public class UIManager : Singleton<UIManager>
     {
         UI.SetActive(false);
         Time.timeScale = 1f;
-
     }
 
     public void UpdateTextBotInMap()
     {
+        Debug.Log("UpdateTextBotInMap");
         this.textBotInMap.text = LevelManager.Instance.CurrentLevel.BotInMap().ToString();
     }
 
     public void CloseAllUI()
     {
-        this.PauseGame();
         this.mainmenuUI.SetActive(false);
         this.winUI.SetActive(false);
         this.loseUI.SetActive(false);

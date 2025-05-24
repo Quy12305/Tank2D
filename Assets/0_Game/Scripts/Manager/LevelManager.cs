@@ -48,14 +48,15 @@ public class LevelManager : Singleton<LevelManager>
             currentLevel.DeleteAllData();
         }
 
+        DynamicFlowManager.Instance.Reset();
         MazeGenerator.Instance.CreateMap();
     }
 
     public void OnStart()
     {
-        GameManager.Instance.ChangeState(GameState.GamePlay);
         SetDataToGenMapAndBot();
         LoadLevel();
+        GameManager.Instance.ChangeState(GameState.GamePlay);
     }
 
     public void OnFinish()

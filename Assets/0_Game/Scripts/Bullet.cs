@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
@@ -47,10 +48,15 @@ public class Bullet : MonoBehaviour
                 pool.ReturnObject(gameObject);
             }
 
-            if (LevelManager.Instance.CurrentLevel.CheckWin())
+            DOVirtual.DelayedCall(0.01f, () =>
             {
-                LevelManager.Instance.OnFinish();
-            }
+                UIManager.Instance.UpdateTextBotInMap();
+
+                if (LevelManager.Instance.CurrentLevel.CheckWin())
+                {
+                    LevelManager.Instance.OnFinish();
+                }
+            });
         }
     }
 
