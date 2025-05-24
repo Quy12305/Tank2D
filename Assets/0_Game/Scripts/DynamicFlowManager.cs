@@ -78,6 +78,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         flow = new MinCostFlowSolver(totalNodes);
         nodeMap.Clear();
 
+        // Tạo nodeMap trước
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -86,9 +87,16 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
                 {
                     int id = x + y * width;
                     nodeMap[new Vector2Int(x, y)] = id;
-                    AddEdges(id, x, y, map);
                 }
             }
+        }
+
+        // Thêm edges sau khi đã có đầy đủ nodes
+        foreach (var kvp in nodeMap)
+        {
+            Vector2Int pos = kvp.Key;
+            int        id  = kvp.Value;
+            AddEdges(id, pos.x, pos.y, map);
         }
     }
 

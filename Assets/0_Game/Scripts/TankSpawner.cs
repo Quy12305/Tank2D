@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class TankSpawner : Singleton<TankSpawner>
 {
@@ -60,9 +61,6 @@ public class TankSpawner : Singleton<TankSpawner>
 
         // Sinh player tank
         GameObject player = SpawnTank(playerTankPrefab, allSpawnPositions[allSpawnPositions.Count - 1]);
-        OnPlayerSpawned?.Invoke(player.transform);
-
-        FindObjectOfType<DynamicFlowManager>()?.UpdateTarget(player.transform.position);
 
         // Sinh enemy tanks
         for (int i = 0; i < numberOfEnemies; i++)
@@ -70,6 +68,8 @@ public class TankSpawner : Singleton<TankSpawner>
             SpawnTank(enemyTankPrefab, allSpawnPositions[i]);
         }
 
+        OnPlayerSpawned?.Invoke(player.transform);
+        FindObjectOfType<DynamicFlowManager>()?.UpdateTarget(player.transform.position);
         UIManager.Instance.UpdateTextBotInMap();
     }
 

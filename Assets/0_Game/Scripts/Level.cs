@@ -45,7 +45,7 @@ public class Level : MonoBehaviour
             }
         }
 
-        var joystick = FindObjectOfType<FloatingJoystick>();
+        var joystick = FindObjectOfType<VariableJoystick>();
         if (joystick != null)
         {
             joystick.OnPointerUp(null);

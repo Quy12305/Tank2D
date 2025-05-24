@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class BotTank : TankBase
 {
@@ -31,12 +32,15 @@ public class BotTank : TankBase
         TankSpawner.OnPlayerSpawned       += OnPlayerSpawned;
         DynamicFlowManager.OnPathsUpdated += UpdatePath;
 
-        GameObject foundPlayer = GameObject.FindWithTag("Player");
-        if (foundPlayer != null)
+        DOVirtual.DelayedCall(0.1f, () =>
         {
-            player = foundPlayer.transform;
-            UpdatePath();
-        }
+            GameObject foundPlayer = GameObject.FindWithTag("Player");
+            if (foundPlayer != null)
+            {
+                player = foundPlayer.transform;
+                UpdatePath();
+            }
+        });
     }
 
     private void OnPlayerSpawned(Transform playerTransform)

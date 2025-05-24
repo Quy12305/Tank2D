@@ -26,6 +26,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         OnMapGenerationCompleted += () =>
         {
             DynamicFlowManager.Instance.SetMap(GetMap());
+            DynamicFlowManager.Instance.Reset();
         };
     }
 
