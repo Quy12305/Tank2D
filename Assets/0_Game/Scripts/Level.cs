@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,12 +10,11 @@ public class Level : MonoBehaviour
 
     public bool CheckWin()
     {
-        BotTank[] botTanks = FindObjectsOfType<BotTank>();
-        if (botTanks.Length > 0)
+        if (this.BotInMap() == 0)
         {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public int BotInMap()
@@ -34,11 +34,26 @@ public class Level : MonoBehaviour
         {
             DestroyAllChildren(BotAndPlayer.transform);
         }
+
+        var bullets = FindObjectsOfType<Bullet>();
+        var pool    = FindObjectOfType<ObjectPool>();
+        if (pool != null)
+        {
+            foreach (var bullet in bullets)
+            {
+                pool.ReturnObject(bullet.gameObject);
+            }
+        }
+
+        var joystick = FindObjectOfType<FloatingJoystick>();
+        if (joystick != null)
+        {
+            joystick.OnPointerUp(null);
+        }
     }
 
     private void DestroyAllChildren(Transform parent)
     {
-        // Tạo danh sách tạm để tránh lỗi khi xóa trong lúc lặp
         foreach (Transform child in parent)
         {
             Destroy(child.gameObject);

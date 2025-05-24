@@ -69,6 +69,8 @@ public class TankSpawner : Singleton<TankSpawner>
         {
             SpawnTank(enemyTankPrefab, allSpawnPositions[i]);
         }
+
+        UIManager.Instance.UpdateTextBotInMap();
     }
 
     private GameObject SpawnTank(GameObject prefab, Vector3 position)

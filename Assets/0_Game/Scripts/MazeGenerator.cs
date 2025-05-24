@@ -90,7 +90,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             }
         }
 
-        EnsureConnectivity(); // Quan trọng: Đảm bảo liên thông
+        EnsureConnectivity(); //Đảm bảo liên thông
 
         return map;
     }
@@ -107,8 +107,6 @@ public class MazeGenerator : Singleton<MazeGenerator>
         bool isNearCorner           = (isTouchingLeftBorder || isTouchingRightBorder) && (isTouchingTopBorder || isTouchingBottomBorder);
 
         if (isNearCorner) return;
-
-        // ========== THÊM CHECK CHỒNG LẤN Ở TẤT CẢ CÁC TRƯỜNG HỢP ==========
 
         // Xử lý gần biên trên/dưới (tường dọc)
         if (isTouchingTopBorder || isTouchingBottomBorder)
@@ -180,7 +178,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             return;
         }
 
-        // Tạo tường nội thất
+        // Tạo tường
         int rotation = rand.Next(2);
         if (rotation == 0) // Horizontal
         {
@@ -262,7 +260,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             ConnectWithCorridor(region, mainRegion);
         }
 
-        // Đệ quy kiểm tra lại (phòng trường hợp sót)
+        // Đệ quy kiểm tra lại
         regions = FindAllRegions();
         if (regions.Count > 1) EnsureConnectivity();
     }

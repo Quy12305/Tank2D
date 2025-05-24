@@ -25,6 +25,18 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         TankSpawner.OnPlayerSpawned += OnPlayerSpawned;
     }
 
+    public void Reset()
+    {
+        nodeMap.Clear();
+        botPaths.Clear();
+        flow              = null;
+        lastPlayerGridPos = Vector2Int.zero;
+        playerTransform   = null;
+        pathUpdateTimer   = 0f;
+
+        StartCoroutine(WaitForMapInitialization());
+    }
+
     private void OnDestroy() { TankSpawner.OnPlayerSpawned -= OnPlayerSpawned; }
 
     private void OnPlayerSpawned(Transform player)
