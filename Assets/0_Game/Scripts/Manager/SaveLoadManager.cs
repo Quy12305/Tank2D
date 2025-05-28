@@ -1,4 +1,5 @@
 using System.IO;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class SaveLoadManager : Singleton<SaveLoadManager>
@@ -39,4 +40,20 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
             Debug.LogWarning("No save file found.");
         }
     }
+
+    #if UNITY_EDITOR
+    [Button("Delete Data")]
+    public void DeleteSaveFile()
+    {
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+            Debug.Log("Save file deleted.");
+        }
+        else
+        {
+            Debug.LogWarning("No save file to delete.");
+        }
+    }
+    #endif
 }

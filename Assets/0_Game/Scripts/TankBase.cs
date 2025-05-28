@@ -51,6 +51,7 @@ public abstract class TankBase : MonoBehaviour
             {
                 bulletComponent.SetDirection(transform.up);
                 bulletComponent.Setup(gameObject);
+                SoundManager.Instance.OnShoot();
             }
         }
     }
@@ -68,6 +69,8 @@ public abstract class TankBase : MonoBehaviour
         {
             this.OnDeath();
         }
+
+        SoundManager.Instance.OnTakeDamage();
     }
 
     protected virtual void OnDeath()
