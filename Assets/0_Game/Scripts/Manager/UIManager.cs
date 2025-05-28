@@ -4,6 +4,7 @@ using DG.Tweening;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
 {
@@ -16,15 +17,15 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private TMP_Text         textBotInMap;
     [SerializeField] private GameObject       ButtonSettingWhilePlay;
     [SerializeField] private GameObject       ButtonSettingWhileMenu;
+    [SerializeField] private Image            ImageSetting;
     [SerializeField] private List<GameObject> ButtonInMainMenu;
 
-    private void Start()
-    {
-        this.OpenMainMenuUI();
-    }
+    private void Start() { this.OpenMainMenuUI(); }
 
     public void OpenMainMenuUI()
     {
+        Time.timeScale = 1f;
+        LevelManager.Instance.CurrentLevel.DeleteAllData();
         this.CloseAllUI();
         this.mainmenuUI.SetActive(true);
 
@@ -38,9 +39,9 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenGamePlayUI()
     {
+        Time.timeScale = 1f;
         this.CloseAllUI();
         this.gameplayUI.SetActive(true);
-        Time.timeScale = 1f;
         SoundManager.Instance.OnInGame();
     }
 
@@ -63,18 +64,26 @@ public class UIManager : Singleton<UIManager>
         SoundManager.Instance.OnClickButton();
         PauseGame();
         this.settingsUI.SetActive(true);
+
+        RectTransform rectTransform   = ImageSetting.rectTransform;
+        Vector3       currentPosition = ImageSetting.rectTransform.localPosition;
+        Vector2       currentSize     = ImageSetting.rectTransform.sizeDelta;
+
         if (GameManager.Instance.IsState(GameState.MainMenu))
         {
+            rectTransform.localPosition = new Vector3(currentPosition.x, 116f, currentPosition.z);
+            rectTransform.sizeDelta = new Vector2(currentSize.x, 250f);
+
             this.ButtonSettingWhileMenu.SetActive(true);
             this.ButtonSettingWhilePlay.SetActive(false);
         }
         if (GameManager.Instance.IsState(GameState.GamePlay))
         {
+            rectTransform.localPosition = new Vector3(currentPosition.x, 25f, currentPosition.z);
+            rectTransform.sizeDelta     = new Vector2(currentSize.x, 450f);
             this.ButtonSettingWhilePlay.SetActive(true);
             this.ButtonSettingWhileMenu.SetActive(false);
         }
-
-        this.ScaleButton(this.settingsUI.GetComponent<RectTransform>());
     }
 
     public void OpenModeUI()
@@ -163,9 +172,16 @@ public class UIManager : Singleton<UIManager>
 
     public void Exit(GameObject UI)
     {
+        Time.timeScale = 1f;
         SoundManager.Instance.OnClickButton();
         UI.SetActive(false);
-        Time.timeScale = 1f;
+        if (GameManager.Instance.IsState(GameState.MainMenu))
+        {
+            foreach (GameObject button in this.ButtonInMainMenu)
+            {
+                ScaleButton(button.GetComponent<RectTransform>());
+            }
+        }
     }
 
     private void ScaleButton(RectTransform uiButton)
