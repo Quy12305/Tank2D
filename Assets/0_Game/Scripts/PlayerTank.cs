@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,8 +6,11 @@ using UnityEngine.UI;
 // Lớp PlayerTank giữ nguyên logic di chuyển ban đầu
 public class PlayerTank : TankBase
 {
-    [Header("Movement Settings")] public float              moveSpeed   = 5f;
-    public                               float              rotateSpeed = 200f;
+    [Header("Movement Settings")] public float              moveSpeed       = 5f;
+    public                               float              rotateSpeed     = 200f;
+    private                              int                rayShootCount   = 1;
+    private                              float              boosterTime     = 5f;
+    private                              bool               isBoosterActive = false;
     private                              DynamicFlowManager flowManager;
     private                              Vector2Int         currentPlayerGridPos;
     private                              float              lastPathUpdateTime = 0f;
@@ -20,23 +24,35 @@ public class PlayerTank : TankBase
         currentPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
         variableJoystick     = FindObjectOfType<VariableJoystick>();
         shootButton          = GameObject.Find("Button_Shoot").GetComponent<Button>();
-        shootButton.onClick.AddListener(Shoot);
+        shootButton.onClick.AddListener(() => Shoot(rayShootCount));
     }
 
     void Update()
     {
         HandleMovement();
         HandleShooting();
+
+        if(isBoosterActive)
+        {
+            boosterTime -= Time.deltaTime;
+            if (boosterTime <= 0f)
+            {
+                isBoosterActive = false;
+                rayShootCount   = 1;
+                moveSpeed       = 5f;
+                boosterTime     = 5f;
+            }
+        }
     }
 
     private void HandleMovement()
     {
         //Di chuyển bằng mũi tên
-        // float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
-        // float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
-        //
-        // rb.velocity = transform.up * moveInput;
-        // transform.Rotate(0, 0, -rotateInput);
+        float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
+        float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+
+        rb.velocity = transform.up * moveInput;
+        transform.Rotate(0, 0, -rotateInput);
 
         //Di chuyển bằng joystick
         Vector2 direction = variableJoystick.Direction;
@@ -76,9 +92,32 @@ public class PlayerTank : TankBase
 
     private void HandleShooting()
     {
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.C) && Time.time - lastShootTime >= shootCooldown)
         {
-            Shoot();
+            lastShootTime = Time.time;
+            Shoot(rayShootCount);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("BoosterShoot"))
+        {
+            isBoosterActive = true;
+            rayShootCount++;
+        }
+        else if (other.CompareTag("BoosterSpeed"))
+        {
+            isBoosterActive = true;
+            moveSpeed += 2f;
+        }
+        else if (other.CompareTag("BoosterHealth"))
+        {
+            this.TakeDamage(-30f);
+        }
+        else if (other.CompareTag("BoosterDamage"))
+        {
+            this.TakeDamage(15f);
         }
     }
 

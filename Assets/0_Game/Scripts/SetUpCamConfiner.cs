@@ -1,4 +1,5 @@
 using System;
+using Cinemachine;
 using UnityEngine;
 
 public class SetUpCamConfiner : MonoBehaviour
@@ -49,5 +50,8 @@ public class SetUpCamConfiner : MonoBehaviour
         colliderPoints[3] = new Vector2(-halfWorldDimensionX, halfWorldDimensionY);
 
         boundaryCollider.points = colliderPoints;
+
+        CinemachineConfiner confiner = FindObjectOfType<CinemachineConfiner>();
+        confiner.m_BoundingShape2D = this.GetComponent<PolygonCollider2D>();
     }
 }

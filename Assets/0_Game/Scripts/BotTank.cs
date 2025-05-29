@@ -9,10 +9,6 @@ public class BotTank : TankBase
     public                         float     attackDistance = 5f;
     public                         LayerMask obstacleLayer;
 
-    [Header("Attack Settings")] public float shootCooldown = 1f;
-
-    private float lastShootTime = -Mathf.Infinity;
-
     public  DynamicFlowManager flowManager;
     public  Transform          player;
     private List<Vector3>      currentPath      = new List<Vector3>();
@@ -103,7 +99,7 @@ public class BotTank : TankBase
         if (isAttacking && Time.time - lastShootTime >= shootCooldown)
         {
             lastShootTime = Time.time;
-            Shoot();
+            Shoot(1);
         }
 
         // Vẽ BoxCast
