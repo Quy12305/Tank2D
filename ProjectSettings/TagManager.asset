@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Tank
   - Wall
+  - BoosterShoot
+  - BoosterHealth
+  - BoosterSpeed
+  - Boom
   layers:
   - Default
   - TransparentFX

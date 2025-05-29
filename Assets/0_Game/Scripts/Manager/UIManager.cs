@@ -18,6 +18,7 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private GameObject       ButtonSettingWhilePlay;
     [SerializeField] private GameObject       ButtonSettingWhileMenu;
     [SerializeField] private Image            ImageSetting;
+    [SerializeField] private GameObject       NotificationUI;
     [SerializeField] private List<GameObject> ButtonInMainMenu;
 
     private void Start() { this.OpenMainMenuUI(); }
@@ -43,6 +44,7 @@ public class UIManager : Singleton<UIManager>
         this.CloseAllUI();
         this.gameplayUI.SetActive(true);
         SoundManager.Instance.OnInGame();
+        ScaleNotification();
     }
 
     public void OpenFinishUI()
@@ -72,7 +74,7 @@ public class UIManager : Singleton<UIManager>
         if (GameManager.Instance.IsState(GameState.MainMenu))
         {
             rectTransform.localPosition = new Vector3(currentPosition.x, 116f, currentPosition.z);
-            rectTransform.sizeDelta = new Vector2(currentSize.x, 250f);
+            rectTransform.sizeDelta     = new Vector2(currentSize.x, 250f);
 
             this.ButtonSettingWhileMenu.SetActive(true);
             this.ButtonSettingWhilePlay.SetActive(false);
@@ -89,7 +91,6 @@ public class UIManager : Singleton<UIManager>
     public void OpenModeUI()
     {
         SoundManager.Instance.OnClickButton();
-        this.CloseAllUI();
         this.modeUI.SetActive(true);
 
         this.ScaleButton(this.modeUI.GetComponent<RectTransform>());
@@ -188,6 +189,20 @@ public class UIManager : Singleton<UIManager>
     {
         uiButton.localScale = Vector3.zero;
         uiButton.DOScale(Vector3.one, 1.5f).SetEase(Ease.InOutBack);
+    }
+
+    private void ScaleNotification()
+    {
+        NotificationUI.GetComponent<RectTransform>().localScale = Vector3.zero;
+        NotificationUI.GetComponent<RectTransform>().DOScale(Vector3.one, 2.5f).SetEase(Ease.OutBounce);
+    }
+
+    public void ExitNotification()
+    {
+        NotificationUI.GetComponent<RectTransform>()
+                      .DOScale(Vector3.zero, 0.5f)
+                      .SetEase(Ease.InBack)
+                      .OnComplete(() => NotificationUI.SetActive(false));
     }
 
     public void UpdateTextBotInMap()

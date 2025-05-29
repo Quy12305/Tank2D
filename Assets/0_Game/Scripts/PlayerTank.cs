@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class PlayerTank : TankBase
 {
     [Header("Movement Settings")] public float              moveSpeed       = 5f;
-    public                               float              rotateSpeed     = 200f;
-    private                              int                rayShootCount   = 1;
+    public                               float              rotateSpeed     = 300f;
+    private                              int                rayShootCount   = 3;
     private                              float              boosterTime     = 5f;
     private                              bool               isBoosterActive = false;
     private                              DynamicFlowManager flowManager;
@@ -99,25 +99,31 @@ public class PlayerTank : TankBase
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("BoosterShoot"))
         {
             isBoosterActive = true;
+            boosterTime     = 5f;
             rayShootCount++;
+            Destroy(other.gameObject);
         }
         else if (other.CompareTag("BoosterSpeed"))
         {
-            isBoosterActive = true;
-            moveSpeed += 2f;
+            isBoosterActive =  true;
+            boosterTime     =  5f;
+            moveSpeed       += 2f;
+            Destroy(other.gameObject);
         }
         else if (other.CompareTag("BoosterHealth"))
         {
             this.TakeDamage(-30f);
+            Destroy(other.gameObject);
         }
-        else if (other.CompareTag("BoosterDamage"))
+        else if (other.CompareTag("Boom"))
         {
             this.TakeDamage(15f);
+            Destroy(other.gameObject);
         }
     }
 

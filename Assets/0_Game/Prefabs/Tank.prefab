@@ -182,11 +182,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletSpawnPoint: {fileID: 1339429513708930542}
-  maxHealth: 200
+  maxHealth: 400
   healthBar: {fileID: 0}
-  shootCooldown: 0.75
+  shootCooldown: 0.25
   lastShootTime: -Infinity
-  moveSpeed: 5
+  moveSpeed: 3.5
   rotateSpeed: 200
   variableJoystick: {fileID: 0}
   shootButton: {fileID: 0}

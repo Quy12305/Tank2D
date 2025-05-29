@@ -5,10 +5,19 @@ using UnityEngine;
 public class SetUpCamConfiner : MonoBehaviour
 {
     public PolygonCollider2D boundaryCollider;
+    private CinemachineConfiner confiner;
+
+    private void Awake()
+    {
+        confiner = FindObjectOfType<CinemachineConfiner>();
+    }
 
     private void OnEnable()
     {
-        MazeGenerator.Instance.OnMapGenerationCompleted += SetupBoundaryCollider;
+        if (MazeGenerator.Instance != null)
+        {
+            MazeGenerator.Instance.OnMapGenerationCompleted += SetupBoundaryCollider;
+        }
     }
 
     private void Start()
@@ -21,29 +30,37 @@ public class SetUpCamConfiner : MonoBehaviour
                 boundaryCollider = gameObject.AddComponent<PolygonCollider2D>();
             }
         }
+
+        // Set initial confiner reference
+        if (confiner != null && boundaryCollider != null)
+        {
+            confiner.m_BoundingShape2D = boundaryCollider;
+        }
     }
 
     void OnDestroy()
     {
-        MazeGenerator.Instance.OnMapGenerationCompleted -= SetupBoundaryCollider;
+        if (MazeGenerator.Instance != null)
+        {
+            MazeGenerator.Instance.OnMapGenerationCompleted -= SetupBoundaryCollider;
+        }
     }
 
     void SetupBoundaryCollider()
     {
+        if (boundaryCollider == null || confiner == null) return;
+
         float mapGridRows = MazeGenerator.Instance.height;
         float mapGridCols = MazeGenerator.Instance.width;
-        float tileSize    = MazeGenerator.Instance.tileSize;
+        float tileSize = MazeGenerator.Instance.tileSize;
 
         float mapWorldDimensionX = mapGridRows * tileSize;
         float mapWorldDimensionY = mapGridCols * tileSize;
 
         Vector2[] colliderPoints = new Vector2[4];
-
-        // Tính toán kích thước
         float halfWorldDimensionX = mapWorldDimensionX / 2f;
         float halfWorldDimensionY = mapWorldDimensionY / 2f;
 
-        // Định nghĩa 4 góc của collider
         colliderPoints[0] = new Vector2(-halfWorldDimensionX, -halfWorldDimensionY);
         colliderPoints[1] = new Vector2(halfWorldDimensionX, -halfWorldDimensionY);
         colliderPoints[2] = new Vector2(halfWorldDimensionX, halfWorldDimensionY);
@@ -51,7 +68,8 @@ public class SetUpCamConfiner : MonoBehaviour
 
         boundaryCollider.points = colliderPoints;
 
-        CinemachineConfiner confiner = FindObjectOfType<CinemachineConfiner>();
-        confiner.m_BoundingShape2D = this.GetComponent<PolygonCollider2D>();
+        // Update confiner
+        confiner.m_BoundingShape2D = boundaryCollider;
+        confiner.InvalidatePathCache();
     }
 }
