@@ -4,8 +4,8 @@ using UnityEngine;
 public class ObjectPool : MonoBehaviour
 {
     public  GameObject        bulletPrefab;
-    public  int               initialPoolSize = 10;
-    public  int               maxPoolSize     = 100;
+    public  int               initialPoolSize = 50;
+    public  int               maxPoolSize     = 200;
     private Queue<GameObject> pool;
 
     void Awake()

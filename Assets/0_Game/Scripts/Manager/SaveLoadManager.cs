@@ -45,6 +45,8 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
     [Button("Delete Data")]
     public void DeleteSaveFile()
     {
+        filePath = Application.persistentDataPath + "/gamedata.json";
+
         if (File.Exists(filePath))
         {
             File.Delete(filePath);

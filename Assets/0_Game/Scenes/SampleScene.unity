@@ -4034,8 +4034,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 1868259463135912149, guid: 19ea540acd34c0348a4ae70530bfbd7a, type: 3}
-  initialPoolSize: 10
-  maxPoolSize: 50
+  initialPoolSize: 50
+  maxPoolSize: 200
 --- !u!4 &1207880329
 Transform:
   m_ObjectHideFlags: 0
