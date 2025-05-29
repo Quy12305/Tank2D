@@ -5,8 +5,9 @@ using UnityEngine;
 
 public class Level : MonoBehaviour
 {
-    public GameObject map;
-    public GameObject BotAndPlayer;
+    public                   GameObject map;
+    [SerializeField] private GameObject tankManager;
+    [SerializeField] private GameObject boosterManager;
 
     public bool CheckWin()
     {
@@ -30,9 +31,14 @@ public class Level : MonoBehaviour
             DestroyAllChildren(map.transform);
         }
 
-        if (BotAndPlayer != null)
+        if (this.tankManager != null)
         {
-            DestroyAllChildren(BotAndPlayer.transform);
+            DestroyAllChildren(this.tankManager.transform);
+        }
+
+        if (this.boosterManager != null)
+        {
+            DestroyAllChildren(this.boosterManager.transform);
         }
 
         var bullets = FindObjectsOfType<Bullet>();
