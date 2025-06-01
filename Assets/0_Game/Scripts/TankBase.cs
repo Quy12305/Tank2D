@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class TankBase : MonoBehaviour
 {
     [Header("Common Settings")] public Transform bulletSpawnPoint;
+    public                             GameObject vfxFire;
     public                             float     maxHealth;
     public                             HealthBar healthBar;
     public                             float     shootCooldown;
@@ -54,7 +55,7 @@ public abstract class TankBase : MonoBehaviour
 
             case 2:
             {
-                float   offset = 0.2f;
+                float   offset = 0.1f;
                 Vector3 right  = transform.right * offset;
                 SpawnBullet(spawnPos + right, shootDir);
                 SpawnBullet(spawnPos - right, shootDir);
@@ -112,17 +113,20 @@ public abstract class TankBase : MonoBehaviour
             healthBar.SetNewHp(currentHealth);
         }
 
+        SoundManager.Instance.OnTakeDamage();
+
         if (currentHealth <= 0)
         {
             this.OnDeath();
+            SoundManager.Instance.OnDeath();
         }
-
-        SoundManager.Instance.OnTakeDamage();
     }
 
     protected virtual void OnDeath()
     {
         Destroy(this.healthBar.gameObject);
         Destroy(this.gameObject);
+        GameObject fire = Instantiate(vfxFire, transform.position, Quaternion.identity);
+
     }
 }

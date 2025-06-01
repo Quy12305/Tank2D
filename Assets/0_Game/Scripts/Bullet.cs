@@ -54,7 +54,10 @@ public class Bullet : MonoBehaviour
 
                 if (LevelManager.Instance.CurrentLevel.CheckWin())
                 {
-                    LevelManager.Instance.OnFinish();
+                    DOVirtual.DelayedCall(2f, () =>
+                    {
+                        LevelManager.Instance.OnFinish();
+                    });
                 }
             });
         }
