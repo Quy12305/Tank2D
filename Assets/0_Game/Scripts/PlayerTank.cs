@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Lớp PlayerTank giữ nguyên logic di chuyển ban đầu
 public class PlayerTank : TankBase
 {
     [Header("Movement Settings")] public float              moveSpeed       = 5f;
     public                               float              rotateSpeed     = 300f;
-    private                              int                rayShootCount   = 3;
+    private                              int                rayShootCount   = 1;
     private                              float              boosterTime     = 5f;
     private                              bool               isBoosterActive = false;
     private                              DynamicFlowManager flowManager;
@@ -16,6 +16,8 @@ public class PlayerTank : TankBase
     private                              float              lastPathUpdateTime = 0f;
     public                               VariableJoystick   variableJoystick;
     public                               Button             shootButton;
+
+    [SerializeField] private List<GameObject> barrel;
 
     protected override void Start()
     {
@@ -32,13 +34,14 @@ public class PlayerTank : TankBase
         HandleMovement();
         HandleShooting();
 
-        if(isBoosterActive)
+        if (isBoosterActive)
         {
             boosterTime -= Time.deltaTime;
             if (boosterTime <= 0f)
             {
                 isBoosterActive = false;
                 rayShootCount   = 1;
+                ChangeSkin();
                 moveSpeed       = 5f;
                 boosterTime     = 5f;
             }
@@ -99,6 +102,36 @@ public class PlayerTank : TankBase
         }
     }
 
+    private void ChangeSkin()
+    {
+        switch (rayShootCount)
+        {
+            case 1:
+            {
+                barrel[0].SetActive(true);
+                barrel[1].SetActive(false);
+                barrel[2].SetActive(false);
+                break;
+            }
+
+            case 2:
+            {
+                barrel[0].SetActive(false);
+                barrel[1].SetActive(true);
+                barrel[2].SetActive(false);
+                break;
+            }
+
+            case 3:
+            {
+                barrel[0].SetActive(false);
+                barrel[1].SetActive(false);
+                barrel[2].SetActive(true);
+                break;
+            }
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("BoosterShoot"))
@@ -106,6 +139,7 @@ public class PlayerTank : TankBase
             isBoosterActive = true;
             boosterTime     = 5f;
             rayShootCount++;
+            ChangeSkin();
             Destroy(other.gameObject);
         }
         else if (other.CompareTag("BoosterSpeed"))
@@ -130,6 +164,9 @@ public class PlayerTank : TankBase
     protected override void OnDeath()
     {
         base.OnDeath();
-        LevelManager.Instance.OnLose();
+        DOVirtual.DelayedCall(2f, () =>
+        {
+            LevelManager.Instance.OnLose();
+        });
     }
 }
