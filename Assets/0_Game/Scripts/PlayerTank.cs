@@ -151,7 +151,7 @@ public class PlayerTank : TankBase
         }
         else if (other.CompareTag("BoosterHealth"))
         {
-            this.TakeDamage(-30f);
+            this.TakeDamage(-25f);
             Destroy(other.gameObject);
             SoundManager.Instance.OnBooster();
         }
