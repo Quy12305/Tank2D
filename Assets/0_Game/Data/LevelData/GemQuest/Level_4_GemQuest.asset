@@ -15,7 +15,7 @@ MonoBehaviour:
   width: 34
   height: 44
   botCount: 8
-  distanceBetweenBots: 7
+  distanceBetweenBots: 9
   wallDensity: 25
   minWallLength: 3
   maxWallLength: 7
