@@ -33,6 +33,7 @@ public class UIManager : Singleton<UIManager>
         LevelManager.Instance.CurrentLevel.DeleteAllData();
         this.CloseAllUI();
         this.mainmenuUI.SetActive(true);
+        SoundManager.Instance.OnStopMove();
 
         foreach (GameObject button in this.ButtonInMainMenu)
         {
@@ -133,6 +134,7 @@ public class UIManager : Singleton<UIManager>
         SoundManager.Instance.OnClickButton();
         this.OpenGamePlayUI();
         LevelManager.Instance.OnStart();
+        this.textGem.text = "0";
     }
 
     public void NextButton()
@@ -141,6 +143,7 @@ public class UIManager : Singleton<UIManager>
         this.OpenGamePlayUI();
         LevelManager.Instance.NextLevel();
         LevelManager.Instance.OnStart();
+        this.textGem.text = "0";
     }
 
     public void HomeButton()
@@ -148,6 +151,7 @@ public class UIManager : Singleton<UIManager>
         SoundManager.Instance.OnClickButton();
         GameManager.Instance.ChangeState(GameState.MainMenu);
         this.OpenMainMenuUI();
+        this.textGem.text = "0";
     }
 
     public void PauseGame()
