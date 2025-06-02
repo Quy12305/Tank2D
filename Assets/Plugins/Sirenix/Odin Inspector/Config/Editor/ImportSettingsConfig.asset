@@ -9,15 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e072a6308f4431186071639c2c725a5, type: 3}
-  m_Name: Level_5_GemQuest
+  m_Script: {fileID: 188390376, guid: a4865f1ab4504ed8a368670db22f409c, type: 3}
+  m_Name: ImportSettingsConfig
   m_EditorClassIdentifier: 
-  width: 44
-  height: 57
-  botCount: 12
-  distanceBetweenBots: 11
-  wallDensity: 25
-  minWallLength: 3
-  maxWallLength: 7
-  maxWallThickness: 1
-  gem: 28
+  automateBeforeBuild: 1
