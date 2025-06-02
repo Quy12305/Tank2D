@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class BoosterSpawner : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> boosterPrefabs;
+    [SerializeField] private List<GameObject> boosterPrefabsModeBot;
+    [SerializeField] private List<GameObject> boosterPrefabsModeGem;
     [SerializeField] private MazeGenerator    mazeGenerator;
     private                  List<Vector2Int> emptyCells;
     private                  int              emptyCellsCount = 0;
@@ -42,9 +43,16 @@ public class BoosterSpawner : MonoBehaviour
         Vector2Int randomCell    = emptyCells[Random.Range(0, emptyCells.Count)];
         Vector3    spawnPosition = mazeGenerator.GridToWorldPosition(randomCell.x, randomCell.y);
 
-        GameObject boosterPrefab = boosterPrefabs[Random.Range(0, boosterPrefabs.Count)];
-        Instantiate(boosterPrefab, spawnPosition, Quaternion.identity, transform);
-
+        if (LevelManager.Instance.CurrentMode == Mode.TankWarfare)
+        {
+            GameObject boosterPrefab = this.boosterPrefabsModeBot[Random.Range(0, this.boosterPrefabsModeBot.Count)];
+            Instantiate(boosterPrefab, spawnPosition, Quaternion.identity, transform);
+        }
+        else if (LevelManager.Instance.CurrentMode == Mode.GemQuest)
+        {
+            GameObject boosterPrefab = this.boosterPrefabsModeGem[Random.Range(0, this.boosterPrefabsModeGem.Count)];
+            Instantiate(boosterPrefab, spawnPosition, Quaternion.identity, transform);
+        }
         emptyCells.Remove(randomCell);
     }
 }

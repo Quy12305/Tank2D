@@ -15,11 +15,15 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private GameObject       gameplayUI;
     [SerializeField] private GameObject       modeUI;
     [SerializeField] private TMP_Text         textBotInMap;
+    [SerializeField] private TMP_Text         textGem;
+    [SerializeField] private GameObject       imgBotInMap;
+    [SerializeField] private GameObject       imgGem;
     [SerializeField] private GameObject       ButtonSettingWhilePlay;
     [SerializeField] private GameObject       ButtonSettingWhileMenu;
     [SerializeField] private Image            ImageSetting;
     [SerializeField] private GameObject       NotificationUI;
     [SerializeField] private List<GameObject> ButtonInMainMenu;
+    public                   Button           shootButton;
 
     private void Start() { this.OpenMainMenuUI(); }
 
@@ -43,7 +47,28 @@ public class UIManager : Singleton<UIManager>
         Time.timeScale = 1f;
         this.CloseAllUI();
         this.gameplayUI.SetActive(true);
+        NotificationUI.SetActive(true);
         SoundManager.Instance.OnInGame();
+
+        if (LevelManager.Instance.CurrentMode == Mode.TankWarfare)
+        {
+            this.imgBotInMap.SetActive(true);
+            this.textBotInMap.gameObject.SetActive(true);
+            this.imgGem.SetActive(false);
+            this.textGem.gameObject.SetActive(false);
+            this.shootButton.gameObject.SetActive(true);
+            NotificationUI.GetComponentInChildren<TMP_Text>().text = "\"Survive and destroy all enemy tanks to win. If you're destroyed, it's game over\"";
+        }
+        else if (LevelManager.Instance.CurrentMode == Mode.GemQuest)
+        {
+            this.imgBotInMap.SetActive(false);
+            this.textBotInMap.gameObject.SetActive(false);
+            this.imgGem.SetActive(true);
+            this.textGem.gameObject.SetActive(true);
+            this.shootButton.gameObject.SetActive(false);
+            NotificationUI.GetComponentInChildren<TMP_Text>().text = "\"Survive and collect all magical Gems to win. If you're destroyed, it's game over\"";
+        }
+
         ScaleNotification();
     }
 
@@ -137,30 +162,21 @@ public class UIManager : Singleton<UIManager>
         this.Exit(UI);
     }
 
-    public void EasyModeButton(GameObject UI)
+    public void TankWarfareModeButton(GameObject UI)
     {
         SoundManager.Instance.OnClickButton();
-        LevelManager.Instance.SetLevelData(Mode.Easy);
-        LevelManager.Instance.CurrentMode  = Mode.Easy;
-        GameDataLevel.Instance.currentMode = Mode.Easy;
+        LevelManager.Instance.SetLevelData(Mode.TankWarfare);
+        LevelManager.Instance.CurrentMode  = Mode.TankWarfare;
+        GameDataLevel.Instance.currentMode = Mode.TankWarfare;
         ExitUIforMode(UI);
     }
 
-    public void NomarlModeButton(GameObject UI)
+    public void GemQuestModeButton(GameObject UI)
     {
         SoundManager.Instance.OnClickButton();
-        LevelManager.Instance.SetLevelData(Mode.Nomarl);
-        LevelManager.Instance.CurrentMode  = Mode.Nomarl;
-        GameDataLevel.Instance.currentMode = Mode.Nomarl;
-        ExitUIforMode(UI);
-    }
-
-    public void HardModeButton(GameObject UI)
-    {
-        SoundManager.Instance.OnClickButton();
-        LevelManager.Instance.SetLevelData(Mode.Hard);
-        LevelManager.Instance.CurrentMode  = Mode.Hard;
-        GameDataLevel.Instance.currentMode = Mode.Hard;
+        LevelManager.Instance.SetLevelData(Mode.GemQuest);
+        LevelManager.Instance.CurrentMode  = Mode.GemQuest;
+        GameDataLevel.Instance.currentMode = Mode.GemQuest;
         ExitUIforMode(UI);
     }
 
@@ -210,6 +226,8 @@ public class UIManager : Singleton<UIManager>
         Debug.Log("UpdateTextBotInMap");
         this.textBotInMap.text = LevelManager.Instance.CurrentLevel.BotInMap().ToString();
     }
+
+    public void UpdateCoin(PlayerTank player) { this.textGem.text = player.Gem.ToString(); }
 
     public void CloseAllUI()
     {

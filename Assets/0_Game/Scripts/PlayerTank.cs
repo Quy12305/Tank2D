@@ -6,16 +6,17 @@ using UnityEngine.UI;
 
 public class PlayerTank : TankBase
 {
-    [Header("Movement Settings")] public float              moveSpeed       = 5f;
+    [Header("Movement Settings")] public float              moveSpeed       = 3.5f;
     public                               float              rotateSpeed     = 300f;
     private                              int                rayShootCount   = 1;
-    private                              float              boosterTime     = 5f;
+    private                              float              boosterTime     = 11f;
     private                              bool               isBoosterActive = false;
     private                              DynamicFlowManager flowManager;
     private                              Vector2Int         currentPlayerGridPos;
     private                              float              lastPathUpdateTime = 0f;
     public                               VariableJoystick   variableJoystick;
-    public                               Button             shootButton;
+    private                              int                gem = 0;
+    public                               int                Gem => this.gem;
 
     [SerializeField] private List<GameObject> barrel;
 
@@ -25,8 +26,7 @@ public class PlayerTank : TankBase
         flowManager          = FindObjectOfType<DynamicFlowManager>();
         currentPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
         variableJoystick     = FindObjectOfType<VariableJoystick>();
-        shootButton          = GameObject.Find("Button_Shoot").GetComponent<Button>();
-        shootButton.onClick.AddListener(() => Shoot(rayShootCount));
+        UIManager.Instance.shootButton.onClick.AddListener(() => Shoot(rayShootCount));
     }
 
     void Update()
@@ -42,8 +42,8 @@ public class PlayerTank : TankBase
                 isBoosterActive = false;
                 rayShootCount   = 1;
                 ChangeSkin();
-                moveSpeed       = 5f;
-                boosterTime     = 5f;
+                moveSpeed   = 5f;
+                boosterTime = 11f;
             }
         }
     }
@@ -51,11 +51,11 @@ public class PlayerTank : TankBase
     private void HandleMovement()
     {
         //Di chuyển bằng mũi tên
-        float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
-        float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
-
-        rb.velocity = transform.up * moveInput;
-        transform.Rotate(0, 0, -rotateInput);
+        // float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
+        // float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+        //
+        // rb.velocity = transform.up * moveInput;
+        // transform.Rotate(0, 0, -rotateInput);
 
         //Di chuyển bằng joystick
         Vector2 direction = variableJoystick.Direction;
@@ -137,33 +137,51 @@ public class PlayerTank : TankBase
         if (other.CompareTag("BoosterShoot"))
         {
             isBoosterActive = true;
-            boosterTime     = 5f;
             rayShootCount++;
             ChangeSkin();
             Destroy(other.gameObject);
+            SoundManager.Instance.OnBooster();
         }
         else if (other.CompareTag("BoosterSpeed"))
         {
             isBoosterActive =  true;
-            boosterTime     =  5f;
             moveSpeed       += 2f;
             Destroy(other.gameObject);
+            SoundManager.Instance.OnBooster();
         }
         else if (other.CompareTag("BoosterHealth"))
         {
             this.TakeDamage(-30f);
             Destroy(other.gameObject);
+            SoundManager.Instance.OnBooster();
         }
         else if (other.CompareTag("Boom"))
         {
             this.TakeDamage(15f);
             Destroy(other.gameObject);
+            SoundManager.Instance.OnBoom();
+        }
+        else if (other.CompareTag("Gem"))
+        {
+            this.gem++;
+            Destroy(other.gameObject);
+            UIManager.Instance.UpdateCoin(this);
+            SoundManager.Instance.OnCoin();
+
+            if (LevelManager.Instance.CurrentLevel.CheckWinModeGem(this.gem))
+            {
+                DOVirtual.DelayedCall(2f, () =>
+                {
+                    LevelManager.Instance.OnLose();
+                });
+            }
         }
     }
 
     protected override void OnDeath()
     {
         base.OnDeath();
+        SoundManager.Instance.OnStopMove();
         DOVirtual.DelayedCall(2f, () =>
         {
             LevelManager.Instance.OnLose();

@@ -6,12 +6,22 @@ using UnityEngine;
 public class Level : MonoBehaviour
 {
     public                   GameObject map;
+    public                   int        gemToWin;
     [SerializeField] private GameObject tankManager;
     [SerializeField] private GameObject boosterManager;
 
-    public bool CheckWin()
+    public bool CheckWinModeBot()
     {
         if (this.BotInMap() == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool CheckWinModeGem(int gem)
+    {
+        if( gem >= this.gemToWin)
         {
             return true;
         }

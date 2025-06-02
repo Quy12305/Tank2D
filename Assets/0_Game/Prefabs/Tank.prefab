@@ -435,9 +435,8 @@ MonoBehaviour:
   shootCooldown: 0.25
   lastShootTime: -Infinity
   moveSpeed: 3.5
-  rotateSpeed: 200
+  rotateSpeed: 300
   variableJoystick: {fileID: 0}
-  shootButton: {fileID: 0}
   barrel:
   - {fileID: 195819485914546371}
   - {fileID: 4804260619924240345}

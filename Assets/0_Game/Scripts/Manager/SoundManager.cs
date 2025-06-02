@@ -14,6 +14,8 @@ public class SoundManager : Singleton<SoundManager>
     [SerializeField] private AudioClip   effectShoot;
     [SerializeField] private AudioClip   effectTakeDamage;
     [SerializeField] private AudioClip   effectBooster;
+    [SerializeField] private AudioClip   effectBoom;
+    [SerializeField] private AudioClip   effectCoin;
     [SerializeField] private AudioClip   effectDeath;
     [SerializeField] private AudioClip   effectWin;
     [SerializeField] private AudioClip   effectLose;
@@ -66,6 +68,16 @@ public class SoundManager : Singleton<SoundManager>
     public void OnBooster()
     {
         this.PlayEffect(this.effectBooster);
+    }
+
+    public void OnBoom()
+    {
+        this.PlayEffect(this.effectBoom);
+    }
+
+    public void OnCoin()
+    {
+        this.PlayEffect(this.effectCoin);
     }
 
     public void OnDeath()

@@ -3,9 +3,8 @@ using UnityEngine;
 
 public enum Mode
 {
-    Easy,
-    Nomarl,
-    Hard
+    TankWarfare,
+    GemQuest
 }
 
 public class LevelManager : Singleton<LevelManager>
@@ -19,9 +18,8 @@ public class LevelManager : Singleton<LevelManager>
 
     private int levelIndex = 0;
 
-    [SerializeField] private List<LevelData> listLevelDataEasyMode = new List<LevelData>();
-    [SerializeField] private List<LevelData> listLevelDataNomarlMode = new List<LevelData>();
-    [SerializeField] private List<LevelData> listLevelDataHardMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataTankWarfareMode = new List<LevelData>();
+    [SerializeField] private List<LevelData> listLevelDataGemQuestMode = new List<LevelData>();
 
     private Dictionary<Mode, List<LevelData>> modeLevelData;
 
@@ -32,9 +30,8 @@ public class LevelManager : Singleton<LevelManager>
 
         modeLevelData = new Dictionary<Mode, List<LevelData>>
         {
-            { Mode.Easy, listLevelDataEasyMode },
-            { Mode.Nomarl, listLevelDataNomarlMode },
-            { Mode.Hard, listLevelDataHardMode }
+            { Mode.TankWarfare, this.listLevelDataTankWarfareMode },
+            { Mode.GemQuest, this.listLevelDataGemQuestMode }
         };
 
         SetLevelData(currentMode);
@@ -99,13 +96,14 @@ public class LevelManager : Singleton<LevelManager>
     public void SetDataToGenMapAndBot()
     {
         var levelData = levels[levelIndex];
-        MazeGenerator.Instance.height = levelData.height;
-        MazeGenerator.Instance.width = levelData.width;
-        MazeGenerator.Instance.wallDensity = levelData.wallDensity;
-        MazeGenerator.Instance.minWallLength = levelData.minWallLength;
-        MazeGenerator.Instance.maxWallLength = levelData.maxWallLength;
-        MazeGenerator.Instance.maxWallThickness = levelData.maxWallThickness;
-        TankSpawner.Instance.numberOfEnemies = levelData.botCount;
+        MazeGenerator.Instance.height                = levelData.height;
+        MazeGenerator.Instance.width                 = levelData.width;
+        MazeGenerator.Instance.wallDensity           = levelData.wallDensity;
+        MazeGenerator.Instance.minWallLength         = levelData.minWallLength;
+        MazeGenerator.Instance.maxWallLength         = levelData.maxWallLength;
+        MazeGenerator.Instance.maxWallThickness      = levelData.maxWallThickness;
+        TankSpawner.Instance.numberOfEnemies         = levelData.botCount;
         TankSpawner.Instance.minDistanceBetweenTanks = levelData.distanceBetweenBots;
+        this.currentLevel.gemToWin                            = levelData.gem;
     }
 }
