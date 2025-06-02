@@ -172,7 +172,7 @@ public class PlayerTank : TankBase
             {
                 DOVirtual.DelayedCall(2f, () =>
                 {
-                    LevelManager.Instance.OnLose();
+                    LevelManager.Instance.OnFinish();
                 });
             }
         }
