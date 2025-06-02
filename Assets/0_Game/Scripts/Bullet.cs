@@ -52,7 +52,7 @@ public class Bullet : MonoBehaviour
             {
                 UIManager.Instance.UpdateTextBotInMap();
 
-                if (LevelManager.Instance.CurrentLevel.CheckWin())
+                if (LevelManager.Instance.CurrentLevel.CheckWinModeBot())
                 {
                     DOVirtual.DelayedCall(2f, () =>
                     {

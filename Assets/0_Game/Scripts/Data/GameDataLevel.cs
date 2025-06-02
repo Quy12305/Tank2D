@@ -3,13 +3,12 @@ using UnityEngine;
 
 public class GameDataLevel : Singleton<GameDataLevel>
 {
-    public Mode currentMode = Mode.Easy;
+    public Mode currentMode = Mode.TankWarfare;
 
     public Dictionary<Mode, int> LevelIndexByMode = new Dictionary<Mode, int>
     {
-        { Mode.Easy, 0 },
-        { Mode.Nomarl, 0 },
-        { Mode.Hard, 0 }
+        { Mode.TankWarfare, 0 },
+        { Mode.GemQuest, 0 }
     };
 
     [System.Serializable]
