@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Level_2_TankWarfare
   m_EditorClassIdentifier: 
   width: 20
-  height: 28
+  height: 26
   botCount: 3
   distanceBetweenBots: 5
   wallDensity: 30
   minWallLength: 3
   maxWallLength: 7
   maxWallThickness: 1
-  coin: 0
+  gem: 0
