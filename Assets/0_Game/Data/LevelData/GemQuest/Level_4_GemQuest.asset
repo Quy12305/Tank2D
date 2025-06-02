@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e072a6308f4431186071639c2c725a5, type: 3}
-  m_Name: Level_2_GemQuest
+  m_Name: Level_4_GemQuest
   m_EditorClassIdentifier: 
-  width: 20
-  height: 26
-  botCount: 3
-  distanceBetweenBots: 5
+  width: 34
+  height: 44
+  botCount: 8
+  distanceBetweenBots: 7
   wallDensity: 25
   minWallLength: 3
   maxWallLength: 7
   maxWallThickness: 1
-  gem: 12
+  gem: 21

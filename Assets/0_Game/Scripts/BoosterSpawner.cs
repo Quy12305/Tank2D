@@ -25,7 +25,7 @@ public class BoosterSpawner : MonoBehaviour
             {
                 SpawnBooster();
                 timeToSpawn = 0f;
-                time        = Random.Range(5f, 10f);
+                time        = Random.Range(3f, 10f);
             }
         }
     }
