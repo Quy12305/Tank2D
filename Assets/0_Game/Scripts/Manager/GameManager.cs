@@ -21,5 +21,4 @@ public class GameManager : Singleton<GameManager>
     {
         return state == gameState;
     }
-
 }

@@ -168,8 +168,9 @@ public class PlayerTank : TankBase
             UIManager.Instance.UpdateCoin(this);
             SoundManager.Instance.OnCoin();
 
-            if (LevelManager.Instance.CurrentLevel.CheckWinModeGem(this.gem))
+            if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeGem(this.gem))
             {
+                GameManager.Instance.ChangeState(GameState.Win);
                 DOVirtual.DelayedCall(2f, () =>
                 {
                     LevelManager.Instance.OnFinish();
@@ -184,6 +185,7 @@ public class PlayerTank : TankBase
         SoundManager.Instance.OnStopMove();
         DOVirtual.DelayedCall(2f, () =>
         {
+            GameManager.Instance.ChangeState(GameState.Lose);
             LevelManager.Instance.OnLose();
         });
     }

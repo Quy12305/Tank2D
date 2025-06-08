@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 44
   height: 57
-  botCount: 12
+  botCount: 16
   distanceBetweenBots: 11
   wallDensity: 30
   minWallLength: 3

@@ -20,4 +20,4 @@ MonoBehaviour:
   minWallLength: 3
   maxWallLength: 7
   maxWallThickness: 1
-  gem: 16
+  gem: 11

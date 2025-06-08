@@ -21,7 +21,7 @@ public class Level : MonoBehaviour
 
     public bool CheckWinModeGem(int gem)
     {
-        if( gem >= this.gemToWin)
+        if(gem >= this.gemToWin)
         {
             return true;
         }
