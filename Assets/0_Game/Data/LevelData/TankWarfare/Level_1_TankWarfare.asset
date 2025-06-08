@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 15
   height: 20
-  botCount: 2
+  botCount: 3
   distanceBetweenBots: 3
   wallDensity: 30
   minWallLength: 3
   maxWallLength: 7
   maxWallThickness: 1
-  coin: 0
+  gem: 0

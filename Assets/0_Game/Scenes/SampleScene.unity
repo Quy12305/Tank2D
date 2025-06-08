@@ -2950,7 +2950,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boosterPrefabsModeBot:
-  - {fileID: 4765734325999834873, guid: b42c64652a42102459bf4960615a899c, type: 3}
   - {fileID: 19121079158797950, guid: 02993b1132b263d48b80b0ac72a92d4e, type: 3}
   - {fileID: 4765734325999834873, guid: b42c64652a42102459bf4960615a899c, type: 3}
   - {fileID: 2008901681850102521, guid: 17f618752a16da04f90a0e29282dba0a, type: 3}
