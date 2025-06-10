@@ -59,7 +59,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         Vector2Int gridPos = WorldToGridPosition(worldPos);
         lastPlayerGridPos = gridPos;
 
-        // Gọi thủ công nếu bạn muốn ép cập nhật
         List<Vector2Int> enemyGridPositions = new();
         foreach (BotTank bot in FindObjectsOfType<BotTank>())
         {
@@ -78,7 +77,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         flow = new MinCostFlowSolver(totalNodes);
         nodeMap.Clear();
 
-        // Tạo nodeMap trước
+        // Tạo nodeMap
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -146,7 +145,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         // Kiểm tra điều kiện hợp lệ
         if (!nodeMap.ContainsKey(playerGridPos))
         {
-            Debug.LogWarning($"Player position {playerGridPos} is invalid!");
             return;
         }
 
@@ -159,10 +157,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             if (nodeMap.TryGetValue(pos, out int nodeId))
             {
                 sources.Add(nodeId);
-            }
-            else
-            {
-                Debug.LogWarning($"[Flow] Bot at {pos} is in invalid position!");
             }
         }
 
@@ -179,8 +173,8 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             {
                 if (nodeMap.TryGetValue(neighbor, out int neighborId))
                 {
-                    // Capacity = 1 (trên mỗi cạnh ở 1 chiều chir cho 1 bot qua)
-                    extendedFlow.AddUndirectedEdge(kvp.Value, neighborId, 1, 1);
+                    // Capacity = 1 (trên mỗi cạnh ở 1 chiều chỉ cho 1 bot qua)
+                    extendedFlow.AddEdge(kvp.Value, neighborId, 1, 1);
                 }
             }
         }
@@ -188,9 +182,9 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         // Kết nối super node
         foreach (int source in sources)
         {
-            extendedFlow.AddUndirectedEdge(sourceSuperNode, source, 1, 0);
+            extendedFlow.AddEdge(sourceSuperNode, source, 1, 0);
         }
-        extendedFlow.AddUndirectedEdge(sink, sinkSuperNode, sources.Count, 0);
+        extendedFlow.AddEdge(sink, sinkSuperNode, sources.Count, 0);
 
         // Tính toán flow
         var result = extendedFlow.MinCostMaxFlow(sourceSuperNode, sinkSuperNode, sources.Count);
@@ -213,7 +207,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             }
             else
             {
-                Debug.LogWarning($"No path found for bot at {enemyGridPositions[i]}");
                 botPaths[enemyGridPositions[i]] = new List<Vector3>();
             }
         }
@@ -233,7 +226,10 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         return neighbors;
     }
 
-    public List<Vector3> GetBotPath(Vector2Int botGridPos) { return botPaths.TryGetValue(botGridPos, out var path) ? path : new List<Vector3>(); }
+    public List<Vector3> GetBotPath(Vector2Int botGridPos)
+    {
+        return botPaths.TryGetValue(botGridPos, out var path) ? path : new List<Vector3>();
+    }
 
     public Vector2Int WorldToGridPosition(Vector2 worldPos) =>
         mazeGenerator.WorldToGridPosition(worldPos);

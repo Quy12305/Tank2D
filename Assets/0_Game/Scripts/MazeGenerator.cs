@@ -67,7 +67,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
     {
         map = new int[this.height, this.width];
 
-        // Tạo viền map
+        // Tạo tường bao quanh map
         for (int i = 0; i < this.height; i++)
         {
             map[i, 0]              = 1;
@@ -109,7 +109,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
 
         if (isNearCorner) return;
 
-        // Xử lý gần biên trên/dưới (tường dọc)
+        // Xử lý gần biên trên/dưới
         if (isTouchingTopBorder || isTouchingBottomBorder)
         {
             // Kiểm tra trước khi đặt tường
@@ -144,7 +144,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             return;
         }
 
-        // Xử lý gần biên trái/phải (tường ngang)
+        // Xử lý gần biên trái/phải
         if (isTouchingLeftBorder || isTouchingRightBorder)
         {
             // Kiểm tra trước khi đặt tường
@@ -319,7 +319,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         Vector2Int start = region[rand.Next(region.Count)];
         Vector2Int end   = mainRegion[rand.Next(mainRegion.Count)];
 
-        // Tạo hành hình chữ L (ngang + dọc)
+        // Tạo hành hình chữ L
         CreateHorizontalCorridor(start.x, end.x, start.y);
         CreateVerticalCorridor(start.y, end.y, end.x);
     }
@@ -329,7 +329,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int dir = xStart < xEnd ? 1 : -1;
         for (int x = xStart; x != xEnd + dir; x += dir)
         {
-            // Phá tường và 2 ô kế bên theo chiều dọc
+            // Phá tường theo chiều dọc
             for (int dy = -1; dy <= 1; dy++)
             {
                 if (y + dy > 0 && y + dy < this.width - 1)
@@ -345,7 +345,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int dir = yStart < yEnd ? 1 : -1;
         for (int y = yStart; y != yEnd + dir; y += dir)
         {
-            // Phá tường và 2 ô kế bên theo chiều ngang
+            // Phá tường theo chiều ngang
             for (int dx = -1; dx <= 1; dx++)
             {
                 if (x + dx > 0 && x + dx < this.height - 1)
