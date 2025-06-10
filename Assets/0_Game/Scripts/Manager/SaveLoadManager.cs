@@ -40,22 +40,4 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
             Debug.LogWarning("No save file found.");
         }
     }
-
-    #if UNITY_EDITOR
-    [Button("Delete Data")]
-    public void DeleteSaveFile()
-    {
-        filePath = Application.persistentDataPath + "/gamedata.json";
-
-        if (File.Exists(filePath))
-        {
-            File.Delete(filePath);
-            Debug.Log("Save file deleted.");
-        }
-        else
-        {
-            Debug.LogWarning("No save file to delete.");
-        }
-    }
-    #endif
 }
