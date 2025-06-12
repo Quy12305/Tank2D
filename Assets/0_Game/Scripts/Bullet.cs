@@ -51,16 +51,16 @@ public class Bullet : MonoBehaviour
             DOVirtual.DelayedCall(0.01f, () =>
             {
                 UIManager.Instance.UpdateTextBotInMap();
-
-                if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeBot())
-                {
-                    GameManager.Instance.ChangeState(GameState.Win);
-                    DOVirtual.DelayedCall(2f, () =>
-                    {
-                        LevelManager.Instance.OnFinish();
-                    });
-                }
             });
+
+            if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeBot())
+            {
+                GameManager.Instance.ChangeState(GameState.Win);
+                DOVirtual.DelayedCall(2f, () =>
+                {
+                    LevelManager.Instance.OnFinish();
+                });
+            }
         }
     }
 
