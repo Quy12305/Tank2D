@@ -68,7 +68,7 @@ public class SetUpCamConfiner : MonoBehaviour
 
         boundaryCollider.points = colliderPoints;
 
-        // Update confiner
+        // Cập nhật confiner
         confiner.m_BoundingShape2D = boundaryCollider;
         confiner.InvalidatePathCache();
     }
