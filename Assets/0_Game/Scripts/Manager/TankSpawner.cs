@@ -21,7 +21,7 @@ public class TankSpawner : Singleton<TankSpawner>
     {
         if (mazeGenerator == null)
         {
-            Debug.LogError("Maze Generator reference is missing!");
+            Debug.LogError("Maze Generator is missing!");
             return;
         }
 
@@ -36,7 +36,7 @@ public class TankSpawner : Singleton<TankSpawner>
     private void SpawnAllTanks()
     {
         List<Vector2Int> emptyCells = mazeGenerator.GetEmptyCells();
-        if (emptyCells.Count < numberOfEnemies + 1) // +1 for player
+        if (emptyCells.Count < numberOfEnemies + 1)
         {
             Debug.LogWarning("Not enough empty cells for all tanks!");
             return;

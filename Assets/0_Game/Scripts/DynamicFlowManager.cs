@@ -71,6 +71,8 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     private void InitializeFlow(int[,] map)
     {
         this.map = map;
+
+        // Đang ngược giữa chiều dài và rộng ( sửa sau và ảnh hưởng đến nhiều chỗ )
         width    = mazeGenerator.height;
         height   = mazeGenerator.width;
         int totalNodes = width * height;
@@ -84,6 +86,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             {
                 if (map[x, y] == 0)
                 {
+                    // Đánh số id không trùng lặp
                     int id = x + y * width;
                     nodeMap[new Vector2Int(x, y)] = id;
                 }
@@ -101,6 +104,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     private void AddEdges(int fromNode, int x, int y, int[,] map)
     {
+        // Kiểm tra 4 hướng lân cận
         AddEdgeIfValid(fromNode, x + 1, y, map);
         AddEdgeIfValid(fromNode, x - 1, y, map);
         AddEdgeIfValid(fromNode, x, y + 1, map);
@@ -112,7 +116,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         if (x >= 0 && x < width && y >= 0 && y < height && map[x, y] == 0)
         {
             int toNode = x + y * width;
-            flow.AddEdge(fromNode, toNode, 2, 1);
+            flow.AddEdge(fromNode, toNode, 1, 1);
         }
     }
 
@@ -151,7 +155,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         int       sink    = nodeMap[playerGridPos];
         List<int> sources = new List<int>();
 
-        // Chỉ thêm mỗi bot 1 lần vào sources
+        // Thêm bot vào sources
         foreach (var pos in enemyGridPositions)
         {
             if (nodeMap.TryGetValue(pos, out int nodeId))
@@ -163,8 +167,8 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         // Tạo đồ thị mở rộng
         int totalNodes      = width * height;
         var extendedFlow    = new MinCostFlowSolver(totalNodes + 2);
-        int sourceSuperNode = totalNodes;
-        int sinkSuperNode   = totalNodes + 1;
+        int sourceSuperNode = totalNodes; // Nút ảo, là nguồn đại diện cho tất cả bot đi đến
+        int sinkSuperNode   = totalNodes + 1; // Nút ảo nối đến player, dùng để lúc có nhiều player dễ mở rộng
 
         // Thêm các edge với capacity
         foreach (var kvp in nodeMap)
@@ -196,6 +200,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         {
             if (i < paths.Count && paths[i].Count > 0)
             {
+                // Chuyển đổi các node trong path sang tọa độ
                 List<Vector3> worldPath = new List<Vector3>();
                 foreach (int node in paths[i])
                 {
@@ -214,6 +219,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         OnPathsUpdated?.Invoke();
     }
 
+    // Lấy các ô lân cận đi được của một ô
     private List<Vector2Int> GetNeighbors(Vector2Int pos, int[,] map)
     {
         List<Vector2Int> neighbors = new();
@@ -226,6 +232,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         return neighbors;
     }
 
+    // Lấy đường đi cho bot
     public List<Vector3> GetBotPath(Vector2Int botGridPos)
     {
         return botPaths.TryGetValue(botGridPos, out var path) ? path : new List<Vector3>();

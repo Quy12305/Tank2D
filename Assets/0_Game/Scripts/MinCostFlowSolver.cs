@@ -22,6 +22,7 @@ public class MinCostFlowSolver
     private int nodeCount;
     private const int INF = int.MaxValue;
 
+    // Khởi tạo
     public MinCostFlowSolver(int nodes)
     {
         nodeCount = nodes;

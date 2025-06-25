@@ -4,6 +4,7 @@ using UnityEngine;
 public class SaveLoadManager : Singleton<SaveLoadManager>
 {
     public GameDataLevel levelManager;
+    public TankManager   tankManager;
 
     private string filePath;
 
@@ -16,7 +17,9 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
     public void SaveGame()
     {
         GameData data = new GameData();
-        data.levelData   = levelManager.GetData();
+        data.levelData = levelManager.GetData();
+        data.tankData = tankManager.GetData();
+        data.coinCount = Coin.Instance.coinCount;
 
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(filePath, json);
@@ -31,6 +34,9 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
             GameData data = JsonUtility.FromJson<GameData>(json);
 
             levelManager.LoadFromData(data.levelData);
+            tankManager.LoadFromData(data.tankData);
+            Coin.Instance.coinCount = data.coinCount;
+            UIManager.Instance.UpdateCoin();
 
             Debug.Log("Game loaded!");
         }

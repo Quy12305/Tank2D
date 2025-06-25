@@ -24,6 +24,8 @@ public class Bullet : MonoBehaviour
 
     private void OnEnable() { currentTime = timeToLive; }
 
+    private void SetDamage(float damage) { this.damage = damage; }
+
     public void SetDirection(Vector2 direction)
     {
         if (rb != null)
@@ -52,15 +54,6 @@ public class Bullet : MonoBehaviour
             {
                 UIManager.Instance.UpdateTextBotInMap();
             });
-
-            if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeBot())
-            {
-                GameManager.Instance.ChangeState(GameState.Win);
-                DOVirtual.DelayedCall(2f, () =>
-                {
-                    LevelManager.Instance.OnFinish();
-                });
-            }
         }
     }
 
@@ -81,6 +74,7 @@ public class Bullet : MonoBehaviour
     {
         owner           = bulletOwner;
         ownerLayer      = bulletOwner.layer;
+        SetDamage(bulletOwner.GetComponent<TankBase>().damage);
 
         SetBulletLayer();
     }

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 831230761b134804989a5822564623b9, type: 3}
+  m_Name: PlayerData 2
+  m_EditorClassIdentifier: 
+  speed: 2.5
+  health: 550
+  damage: 30
+  tankImg: {fileID: 21300000, guid: e862bc16aa83783459a4d66abaf932b1, type: 3}
+  cost: 70

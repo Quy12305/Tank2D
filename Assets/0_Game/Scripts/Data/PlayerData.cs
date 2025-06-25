@@ -4,7 +4,8 @@ using UnityEngine;
 public class PlayerData : ScriptableObject
 {
     [Header("Basic Info")] public float speed;
-    public                        float damage;
     public                        float health;
-    public                        float attackCooldown;
+    public                        float damage;
+    public                        Sprite tankImg;
+    public                        int   cost;
 }
