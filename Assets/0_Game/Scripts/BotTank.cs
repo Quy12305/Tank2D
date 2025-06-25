@@ -107,7 +107,7 @@ public class BotTank : TankBase
         Vector2 directionToPlayer = (player.position - transform.position).normalized;
         float   angle             = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
 
-        Vector3[] points = new Vector3[8];
+        Vector3[] points = new Vector3[4];
         Vector2   right  = Quaternion.Euler(0, 0, angle) * Vector2.right * boxSize.x / 2;
         Vector2   up     = Quaternion.Euler(0, 0, angle) * Vector2.up * boxSize.y / 2;
 
@@ -136,13 +136,13 @@ public class BotTank : TankBase
             boxSize,            // Kích thước box
             angle,              // Góc xoay của box
             directionToPlayer,  // Hướng bắn
-            distanceToPlayer,   // Khoảng cách tối đa
+            distanceToPlayer,   // Khoảng cách đến player
             obstacleLayer       // Layer mask
         );
 
         bool hasObstacle = hit.collider != null && !hit.collider.CompareTag("Player");
 
-        // Sửa logic điều kiện tấn công
+        // Điều kiện tấn công
         if (!hasObstacle && distanceToPlayer <= attackDistance)
         {
             isAttacking = true;
@@ -163,13 +163,12 @@ public class BotTank : TankBase
 
         rb.velocity = direction * moveSpeed;
 
-        // Giảm ngưỡng kiểm tra điểm đến
-        if (Vector3.Distance(transform.position, targetPos) < 0.3f)
+        if (Vector3.Distance(transform.position, targetPos) < 0.2f)
         {
             currentPathIndex++;
         }
 
-        // Giữ nguyên logic xoay
+        // Logic xoay
         if (direction.magnitude > 0.1f)
         {
             float      angle     = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;

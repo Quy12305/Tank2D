@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerTank : TankBase
 {
@@ -19,6 +18,7 @@ public class PlayerTank : TankBase
     public                               int                Gem => this.gem;
 
     [SerializeField] private List<GameObject> barrel;
+    [SerializeField] private List<GameObject> tankCore;
 
     protected override void Start()
     {
@@ -27,6 +27,7 @@ public class PlayerTank : TankBase
         currentPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
         variableJoystick     = FindObjectOfType<VariableJoystick>();
         UIManager.Instance.shootButton.onClick.AddListener(() => Shoot(rayShootCount));
+        SetTankData(TankManager.Instance.currentTankIndex, TankManager.Instance.currentSpeed, TankManager.Instance.currentHealth,TankManager.Instance.currentDamage);
     }
 
     void Update()
@@ -46,6 +47,17 @@ public class PlayerTank : TankBase
                 boosterTime = 11f;
             }
         }
+    }
+
+    public void SetTankData(int index, float speed, float health, float damage)
+    {
+        for (int i = 0; i < tankCore.Count; i++)
+        {
+            tankCore[i].SetActive(i == index);
+        }
+        this.moveSpeed = speed;
+        this.maxHealth = health;
+        this.damage    = damage;
     }
 
     private void HandleMovement()
@@ -78,6 +90,8 @@ public class PlayerTank : TankBase
         }
 
         Vector2Int newPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
+
+        // Cập nhật khi người chơi di chuyển sang ô khác
         if (newPlayerGridPos != currentPlayerGridPos)
         {
             // Thêm delay để tránh update liên tục
@@ -165,7 +179,7 @@ public class PlayerTank : TankBase
         {
             this.gem++;
             Destroy(other.gameObject);
-            UIManager.Instance.UpdateCoin(this);
+            UIManager.Instance.UpdateGem(this);
             SoundManager.Instance.OnCoin();
 
             if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeGem(this.gem))
@@ -176,6 +190,12 @@ public class PlayerTank : TankBase
                     LevelManager.Instance.OnFinish();
                 });
             }
+        }
+        else if (other.CompareTag("Coin"))
+        {
+            Destroy(other.gameObject);
+            Coin.Instance.AddCoin(1);
+            SoundManager.Instance.OnCoin();
         }
     }
 

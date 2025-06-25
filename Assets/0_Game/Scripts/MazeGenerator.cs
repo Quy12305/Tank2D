@@ -101,6 +101,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int length    = rand.Next(minWallLength, maxWallLength + 1);
         int thickness = rand.Next(1, maxWallThickness + 1);
 
+        //Kiểm tra xem ô đó có phải nằm ở góc/ gần góc không
         bool isTouchingLeftBorder   = x <= 2;
         bool isTouchingRightBorder  = x >= this.height - 3;
         bool isTouchingTopBorder    = y >= this.width - 3;
@@ -130,7 +131,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             }
             if (!canPlace) return;
 
-            // Tạo tường
+            // Tạo tường theo chiều dọc
             for (int t = 0; t < thickness; t++)
             {
                 if (x + t < this.height - 1)
@@ -165,7 +166,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             }
             if (!canPlace) return;
 
-            // Tạo tường
+            // Tạo tường theo chiều ngang
             for (int t = 0; t < thickness; t++)
             {
                 if (y + t < this.width - 1)
@@ -179,7 +180,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
             return;
         }
 
-        // Tạo tường
+        // Tạo tường khi không phải xoay
         int rotation = rand.Next(2);
         if (rotation == 0) // Horizontal
         {
@@ -319,7 +320,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         Vector2Int start = region[rand.Next(region.Count)];
         Vector2Int end   = mainRegion[rand.Next(mainRegion.Count)];
 
-        // Tạo hành hình chữ L
+        // Tạo hành hình chữ L để liên kết
         CreateHorizontalCorridor(start.x, end.x, start.y);
         CreateVerticalCorridor(start.y, end.y, end.x);
     }
@@ -329,7 +330,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int dir = xStart < xEnd ? 1 : -1;
         for (int x = xStart; x != xEnd + dir; x += dir)
         {
-            // Phá tường theo chiều dọc
+            // Phá tường theo chiều dọc, phá 3 ô để đảm bảo đủ rộng
             for (int dy = -1; dy <= 1; dy++)
             {
                 if (y + dy > 0 && y + dy < this.width - 1)
@@ -345,7 +346,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int dir = yStart < yEnd ? 1 : -1;
         for (int y = yStart; y != yEnd + dir; y += dir)
         {
-            // Phá tường theo chiều ngang
+            // Phá tường theo chiều ngang, phá 3 ô để đảm bảo đủ rộng
             for (int dx = -1; dx <= 1; dx++)
             {
                 if (x + dx > 0 && x + dx < this.height - 1)
@@ -369,6 +370,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         {
             for (int j = 0; j < this.width; j++)
             {
+                //Tính vị trí để tạo tường/đường từ prefabs
                 Vector3 position = new Vector3(
                     i * tileSize + offsetX + tileSize / 2,
                     j * tileSize + offsetY + tileSize / 2,

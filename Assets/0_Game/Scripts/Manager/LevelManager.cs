@@ -16,7 +16,7 @@ public class LevelManager : Singleton<LevelManager>
     public Level CurrentLevel => currentLevel;
     public Mode CurrentMode { get => currentMode; set => currentMode = value; }
 
-    private int levelIndex = 0;
+    private int   levelIndex = 0;
 
     [SerializeField] private List<LevelData> listLevelDataTankWarfareMode = new List<LevelData>();
     [SerializeField] private List<LevelData> listLevelDataGemQuestMode = new List<LevelData>();
@@ -45,6 +45,7 @@ public class LevelManager : Singleton<LevelManager>
             currentLevel.DeleteAllData();
         }
 
+        UIManager.Instance.SetLevelIndex(levelIndex);
         DynamicFlowManager.Instance.Reset();
         MazeGenerator.Instance.CreateMap();
     }
@@ -60,6 +61,7 @@ public class LevelManager : Singleton<LevelManager>
     {
         UIManager.Instance.OpenFinishUI();
         GameManager.Instance.ChangeState(GameState.Win);
+        Coin.Instance.SpawnWinCoins((this.levelIndex + 1) * 25);
     }
 
     public void OnLose()

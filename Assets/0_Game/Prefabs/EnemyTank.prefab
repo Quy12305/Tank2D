@@ -264,6 +264,7 @@ MonoBehaviour:
   healthBar: {fileID: 0}
   shootCooldown: 1
   lastShootTime: -Infinity
+  damage: 20
   moveSpeed: 2
   rotationSpeed: 5
   attackDistance: 5

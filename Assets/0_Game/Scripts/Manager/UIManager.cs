@@ -14,8 +14,12 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private GameObject       settingsUI;
     [SerializeField] private GameObject       gameplayUI;
     [SerializeField] private GameObject       modeUI;
+    [SerializeField] private GameObject       shopUI;
     [SerializeField] private TMP_Text         textBotInMap;
     [SerializeField] private TMP_Text         textGem;
+    [SerializeField] private TMP_Text         textCoin;
+    [SerializeField] private TMP_Text         textCoinGamePlay;
+    [SerializeField] private TMP_Text         textLevelIndex;
     [SerializeField] private GameObject       imgBotInMap;
     [SerializeField] private GameObject       imgGem;
     [SerializeField] private GameObject       ButtonSettingWhilePlay;
@@ -75,14 +79,12 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenFinishUI()
     {
-        this.CloseAllUI();
         this.winUI.SetActive(true);
         SoundManager.Instance.OnWin();
     }
 
     public void OpenLoseUI()
     {
-        this.CloseAllUI();
         this.loseUI.SetActive(true);
         SoundManager.Instance.OnLose();
     }
@@ -118,8 +120,14 @@ public class UIManager : Singleton<UIManager>
     {
         SoundManager.Instance.OnClickButton();
         this.modeUI.SetActive(true);
-
         this.ScaleButton(this.modeUI.GetComponent<RectTransform>());
+    }
+
+    public void OpenShopUI()
+    {
+        SoundManager.Instance.OnClickButton();
+        this.shopUI.SetActive(true);
+        this.ScaleButton(this.shopUI.GetComponent<RectTransform>());
     }
 
     public void PlayButton()
@@ -229,9 +237,29 @@ public class UIManager : Singleton<UIManager>
     {
         Debug.Log("UpdateTextBotInMap");
         this.textBotInMap.text = LevelManager.Instance.CurrentLevel.BotInMap().ToString();
+
+        if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeBot())
+        {
+            GameManager.Instance.ChangeState(GameState.Win);
+            DOVirtual.DelayedCall(2f, () =>
+            {
+                LevelManager.Instance.OnFinish();
+            });
+        }
     }
 
-    public void UpdateCoin(PlayerTank player) { this.textGem.text = player.Gem.ToString(); }
+    public void UpdateGem(PlayerTank player) { this.textGem.text = player.Gem.ToString(); }
+
+    public void UpdateCoin()
+    {
+        this.textCoin.text         = Coin.Instance.coinCount.ToString();
+        this.textCoinGamePlay.text = Coin.Instance.coinCount.ToString();
+    }
+
+    public void SetLevelIndex(int levelIndex)
+    {
+        this.textLevelIndex.text = (levelIndex + 1).ToString();
+    }
 
     public void CloseAllUI()
     {

@@ -1,15 +1,15 @@
 using DG.Tweening;
 using UnityEngine;
 
-// Lớp cơ sở TankBase
 public abstract class TankBase : MonoBehaviour
 {
-    [Header("Common Settings")] public Transform bulletSpawnPoint;
+    [Header("Common Settings")] public Transform  bulletSpawnPoint;
     public                             GameObject vfxFire;
-    public                             float     maxHealth;
-    public                             HealthBar healthBar;
-    public                             float     shootCooldown;
-    public                             float     lastShootTime = -Mathf.Infinity;
+    public                             float      maxHealth;
+    public                             HealthBar  healthBar;
+    public                             float      shootCooldown;
+    public                             float      lastShootTime = -Mathf.Infinity;
+    public                             float      damage;
 
     protected ObjectPool  objectPool;
     protected Rigidbody2D rb;
@@ -127,6 +127,5 @@ public abstract class TankBase : MonoBehaviour
         Destroy(this.healthBar.gameObject);
         Destroy(this.gameObject);
         GameObject fire = Instantiate(vfxFire, transform.position, Quaternion.identity);
-
     }
 }
