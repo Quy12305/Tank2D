@@ -40,9 +40,5 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
 
             Debug.Log("Game loaded!");
         }
-        else
-        {
-            Debug.LogWarning("No save file found.");
-        }
     }
 }

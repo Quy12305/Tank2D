@@ -13,7 +13,7 @@ public enum TankState
 
 public class TankManager : Singleton<TankManager>
 {
-    public                   int              currentTankIndex;
+    public                   int              currentTankIndex = 0;
     public                   float            currentHealth;
     public                   float            currentSpeed;
     public                   float            currentDamage;
@@ -29,6 +29,7 @@ public class TankManager : Singleton<TankManager>
 
     private void Start()
     {
+        SaveLoadManager.Instance.LoadGame();
         DOVirtual.DelayedCall(0.5f, () =>
         {
             this.currentHealth = playerDataList[this.currentTankIndex].health;
