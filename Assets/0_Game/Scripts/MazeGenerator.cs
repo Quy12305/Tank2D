@@ -113,70 +113,14 @@ public class MazeGenerator : Singleton<MazeGenerator>
         // Xử lý gần biên trên/dưới
         if (isTouchingTopBorder || isTouchingBottomBorder)
         {
-            // Kiểm tra trước khi đặt tường
-            bool canPlace = true;
-            for (int t = 0; t < thickness; t++)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    int checkX = x + t;
-                    int checkY = y + i;
-                    if (checkX >= this.height - 1 || checkY >= this.width - 1 || map[checkX, checkY] == 1)
-                    {
-                        canPlace = false;
-                        break;
-                    }
-                }
-                if (!canPlace) break;
-            }
-            if (!canPlace) return;
-
-            // Tạo tường theo chiều dọc
-            for (int t = 0; t < thickness; t++)
-            {
-                if (x + t < this.height - 1)
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        map[x + t, y + i] = 1;
-                    }
-                }
-            }
+            if (!TryPlaceWall(x, y, length, thickness, true)) return;
             return;
         }
 
         // Xử lý gần biên trái/phải
         if (isTouchingLeftBorder || isTouchingRightBorder)
         {
-            // Kiểm tra trước khi đặt tường
-            bool canPlace = true;
-            for (int t = 0; t < thickness; t++)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    int checkX = x + i;
-                    int checkY = y + t;
-                    if (checkX >= this.height - 1 || checkY >= this.width - 1 || map[checkX, checkY] == 1)
-                    {
-                        canPlace = false;
-                        break;
-                    }
-                }
-                if (!canPlace) break;
-            }
-            if (!canPlace) return;
-
-            // Tạo tường theo chiều ngang
-            for (int t = 0; t < thickness; t++)
-            {
-                if (y + t < this.width - 1)
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        map[x + i, y + t] = 1;
-                    }
-                }
-            }
+            if (!TryPlaceWall(x, y, length, thickness, false)) return;
             return;
         }
 
@@ -184,26 +128,48 @@ public class MazeGenerator : Singleton<MazeGenerator>
         int rotation = rand.Next(2);
         if (rotation == 0) // Horizontal
         {
-            // Kiểm tra trước khi đặt tường
-            bool canPlace = true;
-            for (int t = 0; t < thickness; t++)
+            if (!TryPlaceWall(x, y, length, thickness, false)) return;
+        }
+        else // Vertical
+        {
+            if (!TryPlaceWall(x, y, length, thickness, true)) return;
+        }
+    }
+
+    private bool TryPlaceWall(int x, int y, int length, int thickness, bool vertical)
+    {
+        // Kiểm tra trước khi đặt tường
+        bool canPlace = true;
+        for (int t = 0; t < thickness; t++)
+        {
+            for (int i = 0; i < length; i++)
             {
-                for (int i = 0; i < length; i++)
+                int checkX = vertical ? x + t : x + i;
+                int checkY = vertical ? y + i : y + t;
+                if (checkX >= this.height - 1 || checkY >= this.width - 1 || map[checkX, checkY] == 1)
                 {
-                    int checkX = x + i;
-                    int checkY = y + t;
-                    if (checkX >= this.height - 1 || checkY >= this.width - 1 || map[checkX, checkY] == 1)
+                    canPlace = false;
+                    break;
+                }
+            }
+            if (!canPlace) break;
+        }
+        if (!canPlace) return false;
+
+        // Tạo tường
+        for (int t = 0; t < thickness; t++)
+        {
+            if (vertical)
+            {
+                if (x + t < this.height - 1)
+                {
+                    for (int i = 0; i < length; i++)
                     {
-                        canPlace = false;
-                        break;
+                        map[x + t, y + i] = 1;
                     }
                 }
-                if (!canPlace) break;
             }
-            if (!canPlace) return;
-
-            // Tạo tường
-            for (int t = 0; t < thickness; t++)
+            else
             {
                 if (y + t < this.width - 1)
                 {
@@ -214,38 +180,8 @@ public class MazeGenerator : Singleton<MazeGenerator>
                 }
             }
         }
-        else // Vertical
-        {
-            // Kiểm tra trước khi đặt tường
-            bool canPlace = true;
-            for (int t = 0; t < thickness; t++)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    int checkX = x + t;
-                    int checkY = y + i;
-                    if (checkX >= this.height - 1 || checkY >= this.width - 1 || map[checkX, checkY] == 1)
-                    {
-                        canPlace = false;
-                        break;
-                    }
-                }
-                if (!canPlace) break;
-            }
-            if (!canPlace) return;
 
-            // Tạo tường
-            for (int t = 0; t < thickness; t++)
-            {
-                if (x + t < this.height - 1)
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        map[x + t, y + i] = 1;
-                    }
-                }
-            }
-        }
+        return true;
     }
 
     private void EnsureConnectivity()

@@ -59,6 +59,7 @@ public class LevelManager : Singleton<LevelManager>
 
     public void OnFinish()
     {
+        if (!GameManager.Instance.IsState(GameState.Win)) return;
         UIManager.Instance.OpenFinishUI();
         GameManager.Instance.ChangeState(GameState.Win);
         Coin.Instance.SpawnWinCoins((this.levelIndex + 1) * 25);
@@ -66,6 +67,7 @@ public class LevelManager : Singleton<LevelManager>
 
     public void OnLose()
     {
+        if (!GameManager.Instance.IsState(GameState.Lose)) return;
         UIManager.Instance.OpenLoseUI();
         GameManager.Instance.ChangeState(GameState.Lose);
     }

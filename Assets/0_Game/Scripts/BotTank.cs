@@ -49,8 +49,7 @@ public class BotTank : TankBase
     {
         if (player == null || flowManager == null) return;
 
-        Vector2Int    fromGrid = flowManager.WorldToGridPosition(transform.position);
-        List<Vector3> path     = flowManager.GetBotPath(fromGrid);
+        List<Vector3> path     = flowManager.GetBotPath(this);
 
         currentPath      = path;
         currentPathIndex = 0;

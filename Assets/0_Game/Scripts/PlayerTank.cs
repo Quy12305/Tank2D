@@ -62,6 +62,13 @@ public class PlayerTank : TankBase
 
     private void HandleMovement()
     {
+        if (UIManager.Instance != null && UIManager.Instance.IsNotificationOpen())
+        {
+            rb.velocity = Vector2.zero;
+            SoundManager.Instance.OnStopMove();
+            return;
+        }
+
         //Di chuyển bằng mũi tên
         // float moveInput   = Input.GetAxis("Vertical") * moveSpeed;
         // float rotateInput = Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
@@ -97,10 +104,8 @@ public class PlayerTank : TankBase
             // Thêm delay để tránh update liên tục
             if (Time.time - lastPathUpdateTime > 0.5f)
             {
-                List<Vector2Int> enemyPositions = new List<Vector2Int>();
-                foreach (var enemy in FindObjectsOfType<BotTank>()) enemyPositions.Add(flowManager.WorldToGridPosition(enemy.transform.position));
-
-                flowManager.UpdatePathsIfNeeded(enemyPositions, newPlayerGridPos);
+                List<BotTank> enemyBots = new List<BotTank>(FindObjectsOfType<BotTank>());
+                flowManager.UpdatePathsIfNeeded(enemyBots, newPlayerGridPos);
                 currentPlayerGridPos = newPlayerGridPos;
                 lastPathUpdateTime   = Time.time;
             }
@@ -203,9 +208,11 @@ public class PlayerTank : TankBase
     {
         base.OnDeath();
         SoundManager.Instance.OnStopMove();
+        if (!GameManager.Instance.IsState(GameState.GamePlay)) return;
+
+        GameManager.Instance.ChangeState(GameState.Lose);
         DOVirtual.DelayedCall(2f, () =>
         {
-            GameManager.Instance.ChangeState(GameState.Lose);
             LevelManager.Instance.OnLose();
         });
     }

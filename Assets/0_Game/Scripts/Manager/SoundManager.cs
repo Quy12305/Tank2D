@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class SoundManager : Singleton<SoundManager>
 {
+    private const string PrefMasterVolume = "sound_master_volume";
+    private const string PrefMusicMute    = "sound_music_mute";
+
     [SerializeField] private Slider      sliderMusic;
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private AudioSource moveSource;
@@ -23,7 +26,11 @@ public class SoundManager : Singleton<SoundManager>
     // Start is called before the first frame update
     private void Start()
     {
-        sliderMusic.onValueChanged.AddListener(val => ChangeMasterVolume(val));
+        if (sliderMusic != null)
+        {
+            sliderMusic.onValueChanged.AddListener(val => ChangeMasterVolume(val));
+        }
+        LoadSoundSettings();
     }
 
     public void PlayEffect(AudioClip clip)
@@ -43,11 +50,31 @@ public class SoundManager : Singleton<SoundManager>
     public void ChangeMasterVolume(float value)
     {
         AudioListener.volume = value;
+        PlayerPrefs.SetFloat(PrefMasterVolume, value);
+        PlayerPrefs.Save();
     }
 
     public void ToggleMusic()
     {
         musicSource.mute = !musicSource.mute;
+        PlayerPrefs.SetInt(PrefMusicMute, musicSource.mute ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    private void LoadSoundSettings()
+    {
+        float volume = PlayerPrefs.GetFloat(PrefMasterVolume, 1f);
+        AudioListener.volume = volume;
+
+        if (sliderMusic != null)
+        {
+            sliderMusic.SetValueWithoutNotify(volume);
+        }
+
+        if (musicSource != null)
+        {
+            musicSource.mute = PlayerPrefs.GetInt(PrefMusicMute, 0) == 1;
+        }
     }
 
     public void OnClickButton()

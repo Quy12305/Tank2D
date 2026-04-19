@@ -233,6 +233,11 @@ public class UIManager : Singleton<UIManager>
                       .OnComplete(() => NotificationUI.SetActive(false));
     }
 
+    public bool IsNotificationOpen()
+    {
+        return NotificationUI != null && NotificationUI.activeSelf;
+    }
+
     public void UpdateTextBotInMap()
     {
         Debug.Log("UpdateTextBotInMap");
