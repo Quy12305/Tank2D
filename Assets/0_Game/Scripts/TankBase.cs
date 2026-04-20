@@ -42,7 +42,7 @@ public abstract class TankBase : MonoBehaviour
         }
     }
 
-    protected void Shoot(int t)
+    protected void Shoot(int t, BulletType bulletType = BulletType.Normal)
     {
         if (bulletSpawnPoint == null || objectPool == null) return;
 
@@ -51,14 +51,14 @@ public abstract class TankBase : MonoBehaviour
 
         switch (t)
         {
-            case 1: SpawnBullet(spawnPos, shootDir); break;
+            case 1: SpawnBullet(spawnPos, shootDir, bulletType); break;
 
             case 2:
             {
                 float   offset = 0.1f;
                 Vector3 right  = transform.right * offset;
-                SpawnBullet(spawnPos + right, shootDir);
-                SpawnBullet(spawnPos - right, shootDir);
+                SpawnBullet(spawnPos + right, shootDir, bulletType);
+                SpawnBullet(spawnPos - right, shootDir, bulletType);
                 break;
             }
 
@@ -80,9 +80,9 @@ public abstract class TankBase : MonoBehaviour
 
                 Vector2 dirMiddle = shootDir;
 
-                SpawnBullet(spawnPos, dirLeft.normalized);
-                SpawnBullet(spawnPos, dirMiddle.normalized);
-                SpawnBullet(spawnPos, dirRight.normalized);
+                SpawnBullet(spawnPos, dirLeft.normalized, bulletType);
+                SpawnBullet(spawnPos, dirMiddle.normalized, bulletType);
+                SpawnBullet(spawnPos, dirRight.normalized, bulletType);
                 break;
             }
         }
@@ -90,9 +90,14 @@ public abstract class TankBase : MonoBehaviour
         SoundManager.Instance.OnShoot();
     }
 
-    private void SpawnBullet(Vector3 position, Vector2 direction)
+    private void SpawnBullet(Vector3 position, Vector2 direction, BulletType bulletType)
     {
-        GameObject bullet = objectPool.GetObject();
+        GameObject bullet = objectPool.GetObject(bulletType);
+        if (bullet == null)
+        {
+            return;
+        }
+
         bullet.transform.position = position;
         bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
 

@@ -102,12 +102,20 @@ public class LevelManager : Singleton<LevelManager>
         var levelData = levels[levelIndex];
         MazeGenerator.Instance.height                = levelData.height;
         MazeGenerator.Instance.width                 = levelData.width;
-        MazeGenerator.Instance.wallDensity           = levelData.wallDensity;
+        MazeGenerator.Instance.wallDensity           = Mathf.Max(8, levelData.wallDensity - levelData.baseWallDensityReduction);
         MazeGenerator.Instance.minWallLength         = levelData.minWallLength;
         MazeGenerator.Instance.maxWallLength         = levelData.maxWallLength;
         MazeGenerator.Instance.maxWallThickness      = levelData.maxWallThickness;
+        MazeGenerator.Instance.breakableWallDensity  = levelData.breakableWallDensity;
         TankSpawner.Instance.numberOfEnemies         = levelData.botCount;
         TankSpawner.Instance.minDistanceBetweenTanks = levelData.distanceBetweenBots;
-        this.currentLevel.gemToWin                            = levelData.gem;
+        TankSpawner.Instance.smartBotCount           = levelData.smartBotCount > 0 ? levelData.smartBotCount : levelData.botCount;
+        TankSpawner.Instance.dumbBotCount            = levelData.dumbBotCount;
+        TankSpawner.Instance.sentryBotCount          = levelData.sentryBotCount;
+        TankSpawner.Instance.maxActiveMobileBots     = Mathf.Max(1, levelData.maxActiveMobileBots);
+        TankSpawner.Instance.respawnThreshold        = Mathf.Max(0, levelData.respawnThreshold);
+        TankSpawner.Instance.spawnBatchSize          = Mathf.Max(1, levelData.spawnBatchSize);
+        TankSpawner.Instance.spawnInterval           = Mathf.Max(0.25f, levelData.spawnInterval);
+        this.currentLevel.gemToWin                  = levelData.gem;
     }
 }

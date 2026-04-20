@@ -9,6 +9,7 @@ public class GameManager : Singleton<GameManager>
 
     private void Awake()
     {
+        ConfigureProjectileCollisions();
         ChangeState(GameState.MainMenu);
     }
 
@@ -20,5 +21,26 @@ public class GameManager : Singleton<GameManager>
     public bool IsState(GameState gameState)
     {
         return state == gameState;
+    }
+
+    private void ConfigureProjectileCollisions()
+    {
+        int playerProjectileLayer = LayerMask.NameToLayer("PlayerProjectile");
+        int enemyProjectileLayer = LayerMask.NameToLayer("EnemyProjectile");
+
+        if (playerProjectileLayer >= 0)
+        {
+            Physics2D.IgnoreLayerCollision(playerProjectileLayer, playerProjectileLayer, true);
+        }
+
+        if (enemyProjectileLayer >= 0)
+        {
+            Physics2D.IgnoreLayerCollision(enemyProjectileLayer, enemyProjectileLayer, true);
+        }
+
+        if (playerProjectileLayer >= 0 && enemyProjectileLayer >= 0)
+        {
+            Physics2D.IgnoreLayerCollision(playerProjectileLayer, enemyProjectileLayer, true);
+        }
     }
 }

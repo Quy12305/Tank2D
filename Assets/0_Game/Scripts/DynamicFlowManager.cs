@@ -24,6 +24,10 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     {
         StartCoroutine(WaitForMapInitialization());
         TankSpawner.OnPlayerSpawned += OnPlayerSpawned;
+        if (mazeGenerator != null)
+        {
+            mazeGenerator.OnMapChanged += HandleMapChanged;
+        }
     }
 
     public void Reset()
@@ -38,7 +42,14 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         StartCoroutine(WaitForMapInitialization());
     }
 
-    private void OnDestroy() { TankSpawner.OnPlayerSpawned -= OnPlayerSpawned; }
+    private void OnDestroy()
+    {
+        TankSpawner.OnPlayerSpawned -= OnPlayerSpawned;
+        if (mazeGenerator != null)
+        {
+            mazeGenerator.OnMapChanged -= HandleMapChanged;
+        }
+    }
 
     private void OnPlayerSpawned(Transform player)
     {
@@ -55,12 +66,30 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     public void SetMap(int[,] map) { this.map = map; }
 
+    private void HandleMapChanged()
+    {
+        if (mazeGenerator == null || mazeGenerator.GetMap() == null)
+        {
+            return;
+        }
+
+        InitializeFlow(mazeGenerator.GetMap());
+
+        if (playerTransform == null)
+        {
+            return;
+        }
+
+        List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
+        UpdatePathsIfNeeded(enemyBots, WorldToGridPosition(playerTransform.position));
+    }
+
     public void UpdateTarget(Vector3 worldPos)
     {
         Vector2Int gridPos = WorldToGridPosition(worldPos);
         lastPlayerGridPos = gridPos;
 
-        List<BotTank> enemyBots = FindObjectsOfType<BotTank>().ToList();
+        List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
         UpdatePathsIfNeeded(enemyBots, gridPos);
     }
 
@@ -80,7 +109,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         {
             for (int y = 0; y < height; y++)
             {
-                if (map[x, y] == 0)
+                if ((CellType)map[x, y] == CellType.Empty)
                 {
                     // Đánh số id không trùng lặp
                     int id = x + y * width;
@@ -109,7 +138,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     private void AddEdgeIfValid(int fromNode, int x, int y, int[,] map)
     {
-        if (x >= 0 && x < width && y >= 0 && y < height && map[x, y] == 0)
+        if (x >= 0 && x < width && y >= 0 && y < height && (CellType)map[x, y] == CellType.Empty)
         {
             int toNode = x + y * width;
             flow.AddEdge(fromNode, toNode, 1, 1);
@@ -128,7 +157,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             lastPlayerGridPos = currentPlayerGridPos;
             pathUpdateTimer   = 0f;
 
-            List<BotTank> enemyBots = FindObjectsOfType<BotTank>().ToList();
+            List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
             UpdatePathsIfNeeded(enemyBots, currentPlayerGridPos);
         }
     }

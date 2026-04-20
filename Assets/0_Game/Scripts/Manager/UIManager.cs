@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,6 +27,10 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private GameObject       NotificationUI;
     [SerializeField] private List<GameObject> ButtonInMainMenu;
     public                   Button           shootButton;
+    [SerializeField] private Button           switchAmmoButton;
+    [SerializeField] private TMP_Text         switchAmmoText;
+    [SerializeField] private MiniMapController miniMapController;
+    private                  PlayerTank       boundPlayer;
 
     private void Start() { this.OpenMainMenuUI(); }
 
@@ -54,27 +57,9 @@ public class UIManager : Singleton<UIManager>
         this.gameplayUI.SetActive(true);
         NotificationUI.SetActive(true);
         SoundManager.Instance.OnInGame();
-
-        if (LevelManager.Instance.CurrentMode == Mode.TankWarfare)
-        {
-            this.imgBotInMap.SetActive(true);
-            this.textBotInMap.gameObject.SetActive(true);
-            this.imgGem.SetActive(false);
-            this.textGem.gameObject.SetActive(false);
-            this.shootButton.gameObject.SetActive(true);
-            NotificationUI.GetComponentInChildren<TMP_Text>().text = "\"Survive and destroy all enemy tanks to win. If you're destroyed, it's game over\"";
-        }
-        else if (LevelManager.Instance.CurrentMode == Mode.GemQuest)
-        {
-            this.imgBotInMap.SetActive(false);
-            this.textBotInMap.gameObject.SetActive(false);
-            this.imgGem.SetActive(true);
-            this.textGem.gameObject.SetActive(true);
-            this.shootButton.gameObject.SetActive(false);
-            NotificationUI.GetComponentInChildren<TMP_Text>().text = "\"Survive and collect all magical Gems to win. If you're destroyed, it's game over\"";
-        }
-
+        RefreshGameplayHud();
         ScaleNotification();
+        StartCoroutine(RefreshGameplayButtonsNextFrame());
     }
 
     public void OpenFinishUI()
@@ -133,24 +118,27 @@ public class UIManager : Singleton<UIManager>
     public void PlayButton()
     {
         SoundManager.Instance.OnClickButton();
-        this.OpenGamePlayUI();
         LevelManager.Instance.OnStart();
+        this.OpenGamePlayUI();
+        RefreshGameplayHud();
     }
 
     public void ReplayButton()
     {
         SoundManager.Instance.OnClickButton();
-        this.OpenGamePlayUI();
         LevelManager.Instance.OnStart();
+        this.OpenGamePlayUI();
+        RefreshGameplayHud();
         this.textGem.text = "0";
     }
 
     public void NextButton()
     {
         SoundManager.Instance.OnClickButton();
-        this.OpenGamePlayUI();
         LevelManager.Instance.NextLevel();
         LevelManager.Instance.OnStart();
+        this.OpenGamePlayUI();
+        RefreshGameplayHud();
         this.textGem.text = "0";
     }
 
@@ -241,7 +229,14 @@ public class UIManager : Singleton<UIManager>
     public void UpdateTextBotInMap()
     {
         Debug.Log("UpdateTextBotInMap");
-        this.textBotInMap.text = LevelManager.Instance.CurrentLevel.BotInMap().ToString();
+        if (TankSpawner.Instance != null)
+        {
+            this.textBotInMap.text = TankSpawner.Instance.GetRemainingEnemyCount().ToString();
+        }
+        else
+        {
+            this.textBotInMap.text = LevelManager.Instance.CurrentLevel.BotInMap().ToString();
+        }
 
         if (GameManager.Instance.IsState(GameState.GamePlay) && LevelManager.Instance.CurrentLevel.CheckWinModeBot())
         {
@@ -274,5 +269,98 @@ public class UIManager : Singleton<UIManager>
         this.settingsUI.SetActive(false);
         this.gameplayUI.SetActive(false);
         this.modeUI.SetActive(false);
+    }
+
+    private IEnumerator RefreshGameplayButtonsNextFrame()
+    {
+        yield return null;
+        RefreshGameplayHud();
+    }
+
+    private void SetGameplayButtonsActive(bool isActive)
+    {
+        if (shootButton != null)
+        {
+            shootButton.gameObject.SetActive(isActive);
+        }
+
+        if (switchAmmoButton != null)
+        {
+            switchAmmoButton.gameObject.SetActive(isActive);
+        }
+    }
+
+    public void BindPlayer(PlayerTank player)
+    {
+        boundPlayer = player;
+
+        if (switchAmmoButton != null)
+        {
+            switchAmmoButton.onClick.RemoveAllListeners();
+            switchAmmoButton.onClick.AddListener(() =>
+            {
+                if (boundPlayer != null)
+                {
+                    boundPlayer.ToggleBulletType();
+                }
+            });
+        }
+
+        RefreshGameplayHud();
+    }
+
+    public void UpdateAmmoMode(BulletType bulletType)
+    {
+        if (switchAmmoText == null)
+        {
+            return;
+        }
+
+        switchAmmoText.text = bulletType == BulletType.Normal ? "Bullet" : "Lazer";
+    }
+
+    public void RefreshGameplayHud()
+    {
+        if (gameplayUI == null)
+        {
+            return;
+        }
+
+        bool isTankMode = LevelManager.Instance.CurrentMode == Mode.TankWarfare;
+
+        if (imgBotInMap != null)
+        {
+            imgBotInMap.SetActive(isTankMode);
+        }
+
+        if (textBotInMap != null)
+        {
+            textBotInMap.gameObject.SetActive(isTankMode);
+        }
+
+        if (imgGem != null)
+        {
+            imgGem.SetActive(!isTankMode);
+        }
+
+        if (textGem != null)
+        {
+            textGem.gameObject.SetActive(!isTankMode);
+        }
+
+        SetGameplayButtonsActive(isTankMode);
+
+        if (miniMapController != null)
+        {
+            miniMapController.gameObject.SetActive(isTankMode);
+        }
+
+        TMP_Text notificationText = NotificationUI != null ? NotificationUI.GetComponentInChildren<TMP_Text>() : null;
+        if (notificationText != null)
+        {
+            notificationText.text = isTankMode
+                ? "\"Survive and destroy all enemy tanks to win. If you're destroyed, it's game over\""
+                : "\"Survive and collect all magical Gems to win. If you're destroyed, it's game over\"";
+        }
     }
 }

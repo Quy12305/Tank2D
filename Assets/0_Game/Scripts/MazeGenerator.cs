@@ -10,13 +10,16 @@ public class MazeGenerator : Singleton<MazeGenerator>
     public                           int        width;
     public                           float      tileSize;
     [SerializeField] private         GameObject wallPrefab;
+    [SerializeField] private         GameObject breakableWallPrefab;
     [SerializeField] private         GameObject pathPrefab;
     public event Action                         OnMapGenerationCompleted;
+    public event Action                         OnMapChanged;
 
     [Header("Generation Settings")] [Range(0, 100)] public int wallDensity;
     [Range(2, 8)]                                   public int minWallLength;
     [Range(3, 12)]                                  public int maxWallLength;
     [Range(1, 3)]                                   public int maxWallThickness;
+    [Header("Breakable Walls")] [Range(0, 100)] public int breakableWallDensity = 12;
 
     private int[,]        map;
     private System.Random rand;
@@ -60,6 +63,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         }
 
         map = GenerateMap();
+        PlaceBreakableWalls();
         GenerateMapInUnity();
     }
 
@@ -313,11 +317,37 @@ public class MazeGenerator : Singleton<MazeGenerator>
                     0f
                 );
 
-                if (map[i, j] == 1)
+                if ((CellType)map[i, j] != CellType.Empty)
                 {
-                    GameObject wall = Instantiate(wallPrefab, position, Quaternion.identity);
+                    bool isBreakableWall = (CellType)map[i, j] == CellType.BreakableWall;
+                    if (isBreakableWall)
+                    {
+                        GameObject pathUnderBreakable = Instantiate(pathPrefab, position, Quaternion.identity);
+                        pathUnderBreakable.transform.localScale = new Vector3(tileSize, tileSize, 1f);
+                        pathUnderBreakable.transform.parent = mapParent;
+                    }
+
+                    GameObject prefabToSpawn = isBreakableWall && breakableWallPrefab != null ? breakableWallPrefab : wallPrefab;
+                    GameObject wall = Instantiate(prefabToSpawn, position, Quaternion.identity);
                     wall.transform.localScale = new Vector3(tileSize, tileSize, 1f);
                     wall.transform.parent     = mapParent;
+
+                    if (isBreakableWall)
+                    {
+                        if (wall.GetComponent<BreakableWall>() == null)
+                        {
+                            wall.AddComponent<BreakableWall>();
+                        }
+
+                        if (prefabToSpawn == wallPrefab)
+                        {
+                            SpriteRenderer renderer = wall.GetComponent<SpriteRenderer>();
+                            if (renderer != null)
+                            {
+                                renderer.color = new Color(0.82f, 0.66f, 0.52f, 1f);
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -366,10 +396,64 @@ public class MazeGenerator : Singleton<MazeGenerator>
     public bool IsCellEmpty(int x, int y)
     {
         if (x < 0 || x >= this.height || y < 0 || y >= this.width) return false;
-        return map[x, y] == 0;
+        return map[x, y] == (int)CellType.Empty;
     }
 
     public int[,] GetMap() => map;
+
+    public CellType GetCellType(int x, int y)
+    {
+        if (x < 0 || x >= this.height || y < 0 || y >= this.width)
+        {
+            return CellType.SolidWall;
+        }
+
+        return (CellType)map[x, y];
+    }
+
+    public List<Vector2Int> GetCellsByType(CellType type)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+
+        for (int x = 0; x < this.height; x++)
+        {
+            for (int y = 0; y < this.width; y++)
+            {
+                if ((CellType)map[x, y] == type)
+                {
+                    cells.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        return cells;
+    }
+
+    public void RemoveBreakableWallAtWorld(Vector3 worldPosition)
+    {
+        Vector2Int gridPosition = WorldToGridPosition(worldPosition);
+        RemoveBreakableWall(gridPosition);
+    }
+
+    public void RemoveBreakableWall(Vector2Int gridPosition)
+    {
+        if (GetCellType(gridPosition.x, gridPosition.y) != CellType.BreakableWall)
+        {
+            return;
+        }
+
+        map[gridPosition.x, gridPosition.y] = (int)CellType.Empty;
+        OnMapChanged?.Invoke();
+    }
+
+    public Vector3 GetMapCenter()
+    {
+        return Vector3.zero;
+    }
+
+    public float GetMapWorldWidth() { return this.height * tileSize; }
+
+    public float GetMapWorldHeight() { return this.width * tileSize; }
 
     public Vector2Int WorldToGridPosition(Vector3 worldPos)
     {
@@ -384,5 +468,37 @@ public class MazeGenerator : Singleton<MazeGenerator>
             Mathf.Clamp(x, 0, this.height - 1),
             Mathf.Clamp(y, 0, this.width - 1)
         );
+    }
+
+    private void PlaceBreakableWalls()
+    {
+        if (breakableWallDensity <= 0)
+        {
+            return;
+        }
+
+        List<Vector2Int> candidates = new List<Vector2Int>();
+        for (int x = 1; x < this.height - 1; x++)
+        {
+            for (int y = 1; y < this.width - 1; y++)
+            {
+                if ((CellType)map[x, y] != CellType.Empty)
+                {
+                    continue;
+                }
+                
+                candidates.Add(new Vector2Int(x, y));
+            }
+        }
+
+        int wallsToPlace = Mathf.RoundToInt(candidates.Count * (breakableWallDensity / 100f));
+        wallsToPlace = Mathf.Clamp(wallsToPlace, 0, candidates.Count);
+        for (int i = 0; i < wallsToPlace; i++)
+        {
+            int randomIndex = rand.Next(candidates.Count);
+            Vector2Int cell = candidates[randomIndex];
+            candidates.RemoveAt(randomIndex);
+            map[cell.x, cell.y] = (int)CellType.BreakableWall;
+        }
     }
 }

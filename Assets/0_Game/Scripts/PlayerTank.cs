@@ -15,6 +15,7 @@ public class PlayerTank : TankBase
     private                              float              lastPathUpdateTime = 0f;
     public                               VariableJoystick   variableJoystick;
     private                              int                gem = 0;
+    private                              BulletType         currentBulletType = BulletType.Normal;
     public                               int                Gem => this.gem;
 
     [SerializeField] private List<GameObject> barrel;
@@ -26,7 +27,11 @@ public class PlayerTank : TankBase
         flowManager          = FindObjectOfType<DynamicFlowManager>();
         currentPlayerGridPos = flowManager.WorldToGridPosition(transform.position);
         variableJoystick     = FindObjectOfType<VariableJoystick>();
-        UIManager.Instance.shootButton.onClick.AddListener(() => Shoot(rayShootCount));
+        UIManager.Instance.shootButton.onClick.RemoveAllListeners();
+        UIManager.Instance.shootButton.onClick.AddListener(TryShoot);
+        UIManager.Instance.BindPlayer(this);
+        UIManager.Instance.UpdateAmmoMode(currentBulletType);
+        UIManager.Instance.RefreshGameplayHud();
         SetTankData(TankManager.Instance.currentTankIndex, TankManager.Instance.currentSpeed, TankManager.Instance.currentHealth,TankManager.Instance.currentDamage);
     }
 
@@ -104,7 +109,7 @@ public class PlayerTank : TankBase
             // Thêm delay để tránh update liên tục
             if (Time.time - lastPathUpdateTime > 0.5f)
             {
-                List<BotTank> enemyBots = new List<BotTank>(FindObjectsOfType<BotTank>());
+                List<BotTank> enemyBots = new List<BotTank>(Array.FindAll(FindObjectsOfType<BotTank>(), bot => bot != null && bot.IsMobile));
                 flowManager.UpdatePathsIfNeeded(enemyBots, newPlayerGridPos);
                 currentPlayerGridPos = newPlayerGridPos;
                 lastPathUpdateTime   = Time.time;
@@ -116,9 +121,35 @@ public class PlayerTank : TankBase
     {
         if (Input.GetKeyDown(KeyCode.C) && Time.time - lastShootTime >= shootCooldown)
         {
-            lastShootTime = Time.time;
-            Shoot(rayShootCount);
+            TryShoot();
         }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            ToggleBulletType();
+        }
+    }
+
+    public void ToggleBulletType()
+    {
+        currentBulletType = currentBulletType == BulletType.Normal ? BulletType.Laser : BulletType.Normal;
+        UIManager.Instance.UpdateAmmoMode(currentBulletType);
+    }
+
+    private void TryShoot()
+    {
+        if (!GameManager.Instance.IsState(GameState.GamePlay))
+        {
+            return;
+        }
+
+        if (Time.time - lastShootTime < shootCooldown)
+        {
+            return;
+        }
+
+        lastShootTime = Time.time;
+        Shoot(rayShootCount, currentBulletType);
     }
 
     private void ChangeSkin()
