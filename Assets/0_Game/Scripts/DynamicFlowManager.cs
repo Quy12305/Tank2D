@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 
 public class DynamicFlowManager : Singleton<DynamicFlowManager>
 {
@@ -15,7 +16,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     private float      pathUpdateTimer    = 0f;
     private float      pathUpdateInterval = 2f;
 
-    private Dictionary<Vector2Int, List<Vector3>> botPaths = new();
+    private Dictionary<int, List<Vector3>> botPaths = new();
 
     public static event System.Action OnPathsUpdated;
 
@@ -23,6 +24,10 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     {
         StartCoroutine(WaitForMapInitialization());
         TankSpawner.OnPlayerSpawned += OnPlayerSpawned;
+        if (mazeGenerator != null)
+        {
+            mazeGenerator.OnMapChanged += HandleMapChanged;
+        }
     }
 
     public void Reset()
@@ -37,7 +42,14 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         StartCoroutine(WaitForMapInitialization());
     }
 
-    private void OnDestroy() { TankSpawner.OnPlayerSpawned -= OnPlayerSpawned; }
+    private void OnDestroy()
+    {
+        TankSpawner.OnPlayerSpawned -= OnPlayerSpawned;
+        if (mazeGenerator != null)
+        {
+            mazeGenerator.OnMapChanged -= HandleMapChanged;
+        }
+    }
 
     private void OnPlayerSpawned(Transform player)
     {
@@ -54,18 +66,31 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     public void SetMap(int[,] map) { this.map = map; }
 
+    private void HandleMapChanged()
+    {
+        if (mazeGenerator == null || mazeGenerator.GetMap() == null)
+        {
+            return;
+        }
+
+        InitializeFlow(mazeGenerator.GetMap());
+
+        if (playerTransform == null)
+        {
+            return;
+        }
+
+        List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
+        UpdatePathsIfNeeded(enemyBots, WorldToGridPosition(playerTransform.position));
+    }
+
     public void UpdateTarget(Vector3 worldPos)
     {
         Vector2Int gridPos = WorldToGridPosition(worldPos);
         lastPlayerGridPos = gridPos;
 
-        List<Vector2Int> enemyGridPositions = new();
-        foreach (BotTank bot in FindObjectsOfType<BotTank>())
-        {
-            enemyGridPositions.Add(WorldToGridPosition(bot.transform.position));
-        }
-
-        UpdatePathsIfNeeded(enemyGridPositions, gridPos);
+        List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
+        UpdatePathsIfNeeded(enemyBots, gridPos);
     }
 
     private void InitializeFlow(int[,] map)
@@ -84,7 +109,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         {
             for (int y = 0; y < height; y++)
             {
-                if (map[x, y] == 0)
+                if ((CellType)map[x, y] == CellType.Empty)
                 {
                     // Đánh số id không trùng lặp
                     int id = x + y * width;
@@ -113,7 +138,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     private void AddEdgeIfValid(int fromNode, int x, int y, int[,] map)
     {
-        if (x >= 0 && x < width && y >= 0 && y < height && map[x, y] == 0)
+        if (x >= 0 && x < width && y >= 0 && y < height && (CellType)map[x, y] == CellType.Empty)
         {
             int toNode = x + y * width;
             flow.AddEdge(fromNode, toNode, 1, 1);
@@ -132,17 +157,12 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             lastPlayerGridPos = currentPlayerGridPos;
             pathUpdateTimer   = 0f;
 
-            List<Vector2Int> enemyGridPositions = new();
-            foreach (BotTank bot in FindObjectsOfType<BotTank>())
-            {
-                enemyGridPositions.Add(WorldToGridPosition(bot.transform.position));
-            }
-
-            UpdatePathsIfNeeded(enemyGridPositions, currentPlayerGridPos);
+            List<BotTank> enemyBots = FindObjectsOfType<BotTank>().Where(bot => bot != null && bot.IsMobile).ToList();
+            UpdatePathsIfNeeded(enemyBots, currentPlayerGridPos);
         }
     }
 
-    public void UpdatePathsIfNeeded(List<Vector2Int> enemyGridPositions, Vector2Int playerGridPos)
+    public void UpdatePathsIfNeeded(List<BotTank> enemyBots, Vector2Int playerGridPos)
     {
         botPaths.Clear();
 
@@ -152,33 +172,53 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             return;
         }
 
-        int       sink    = nodeMap[playerGridPos];
+        int sinkBase = nodeMap[playerGridPos];
         List<int> sources = new List<int>();
+        List<int> sourceBotIds = new List<int>();
+        List<Vector2Int> sourceGridPositions = new List<Vector2Int>();
 
         // Thêm bot vào sources
-        foreach (var pos in enemyGridPositions)
+        foreach (var bot in enemyBots)
         {
+            Vector2Int pos = WorldToGridPosition(bot.transform.position);
             if (nodeMap.TryGetValue(pos, out int nodeId))
             {
                 sources.Add(nodeId);
+                sourceBotIds.Add(bot.GetInstanceID());
+                sourceGridPositions.Add(pos);
             }
         }
 
+        if (sources.Count == 0)
+        {
+            return;
+        }
+
         // Tạo đồ thị mở rộng
-        int totalNodes      = width * height;
-        var extendedFlow    = new MinCostFlowSolver(totalNodes + 2);
-        int sourceSuperNode = totalNodes; // Nút ảo, là nguồn đại diện cho tất cả bot đi đến
-        int sinkSuperNode   = totalNodes + 1; // Nút ảo nối đến player, dùng để lúc có nhiều player dễ mở rộng
+        int totalNodes = width * height;
+        int splitNodes = totalNodes * 2;
+        var extendedFlow = new MinCostFlowSolver(splitNodes + 2);
+        int sourceSuperNode = splitNodes; // Nút ảo, là nguồn đại diện cho tất cả bot đi đến
+        int sinkSuperNode = splitNodes + 1; // Nút ảo nối đến player, dùng để lúc có nhiều player dễ mở rộng
 
         // Thêm các edge với capacity
         foreach (var kvp in nodeMap)
         {
+            int baseId = kvp.Value;
+            int inNode = baseId * 2;
+            int outNode = baseId * 2 + 1;
+            int nodeCapacity = (baseId == sinkBase) ? sources.Count : 1;
+
+            extendedFlow.AddEdge(inNode, outNode, nodeCapacity, 0);
+
             foreach (var neighbor in GetNeighbors(kvp.Key, map))
             {
                 if (nodeMap.TryGetValue(neighbor, out int neighborId))
                 {
+                    int neighborIn = neighborId * 2;
                     // Capacity = 1 (trên mỗi cạnh ở 1 chiều chỉ cho 1 bot qua)
-                    extendedFlow.AddEdge(kvp.Value, neighborId, 1, 1);
+                    int moveCost = GetMoveCost(kvp.Key, neighbor);
+                    extendedFlow.AddEdge(outNode, neighborIn, 1, moveCost);
                 }
             }
         }
@@ -186,33 +226,41 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         // Kết nối super node
         foreach (int source in sources)
         {
-            extendedFlow.AddEdge(sourceSuperNode, source, 1, 0);
+            int sourceIn = source * 2;
+            extendedFlow.AddEdge(sourceSuperNode, sourceIn, 1, 0);
         }
-        extendedFlow.AddEdge(sink, sinkSuperNode, sources.Count, 0);
+        int sinkOut = sinkBase * 2 + 1;
+        extendedFlow.AddEdge(sinkOut, sinkSuperNode, sources.Count, 0);
 
         // Tính toán flow
         var result = extendedFlow.MinCostMaxFlow(sourceSuperNode, sinkSuperNode, sources.Count);
 
         // Lấy paths và gán vào botPaths
-        var paths = extendedFlow.GetAllPathsFromSources(sources);
+        var paths = extendedFlow.GetAllPathsFromSources(sources.Select(s => s * 2).ToList());
 
-        for (int i = 0; i < enemyGridPositions.Count; i++)
+        for (int i = 0; i < sourceBotIds.Count; i++)
         {
             if (i < paths.Count && paths[i].Count > 0)
             {
                 // Chuyển đổi các node trong path sang tọa độ
                 List<Vector3> worldPath = new List<Vector3>();
+                Vector2Int? lastCell = null;
                 foreach (int node in paths[i])
                 {
-                    int x = node % width;
-                    int y = node / width;
+                    if (node >= splitNodes) continue;
+                    int baseId = node / 2;
+                    int x = baseId % width;
+                    int y = baseId / width;
+                    var cell = new Vector2Int(x, y);
+                    if (lastCell.HasValue && lastCell.Value == cell) continue;
+                    lastCell = cell;
                     worldPath.Add(mazeGenerator.GridToWorldPosition(x, y));
                 }
-                botPaths[enemyGridPositions[i]] = worldPath;
+                botPaths[sourceBotIds[i]] = worldPath;
             }
             else
             {
-                botPaths[enemyGridPositions[i]] = new List<Vector3>();
+                botPaths[sourceBotIds[i]] = new List<Vector3>();
             }
         }
 
@@ -223,7 +271,17 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
     private List<Vector2Int> GetNeighbors(Vector2Int pos, int[,] map)
     {
         List<Vector2Int> neighbors = new();
-        Vector2Int[]     dirs      = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        Vector2Int[]     dirs      =
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right,
+            new Vector2Int(1, 1),
+            new Vector2Int(1, -1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(-1, -1)
+        };
         foreach (var dir in dirs)
         {
             Vector2Int newPos = pos + dir;
@@ -232,10 +290,18 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         return neighbors;
     }
 
-    // Lấy đường đi cho bot
-    public List<Vector3> GetBotPath(Vector2Int botGridPos)
+    private int GetMoveCost(Vector2Int from, Vector2Int to)
     {
-        return botPaths.TryGetValue(botGridPos, out var path) ? path : new List<Vector3>();
+        int dx = Mathf.Abs(from.x - to.x);
+        int dy = Mathf.Abs(from.y - to.y);
+        bool isDiagonal = dx == 1 && dy == 1;
+        return isDiagonal ? 14 : 10;
+    }
+
+    // Lấy đường đi cho bot
+    public List<Vector3> GetBotPath(BotTank bot)
+    {
+        return botPaths.TryGetValue(bot.GetInstanceID(), out var path) ? path : new List<Vector3>();
     }
 
     public Vector2Int WorldToGridPosition(Vector2 worldPos) =>

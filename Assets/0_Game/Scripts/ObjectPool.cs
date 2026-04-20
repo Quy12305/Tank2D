@@ -3,51 +3,95 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
-    public  GameObject        bulletPrefab;
-    public  int               initialPoolSize = 50;
-    public  int               maxPoolSize     = 200;
-    private Queue<GameObject> pool;
+    [Header("Bullet Prefabs")]
+    [SerializeField] private GameObject normalBulletPrefab;
+    [SerializeField] private GameObject laserBulletPrefab;
 
-    void Awake()
+    [Header("Pool Settings")]
+    [SerializeField] private int initialPoolSize = 30;
+    [SerializeField] private int maxPoolSize = 120;
+
+    private readonly Dictionary<BulletType, Queue<GameObject>> pools = new Dictionary<BulletType, Queue<GameObject>>();
+    private readonly Dictionary<BulletType, int> totalCounts = new Dictionary<BulletType, int>();
+
+    private void Awake()
     {
-        pool = new Queue<GameObject>();
-        for (int i = 0; i < initialPoolSize; i++)
-        {
-            CreateNewBullet();
-        }
+        pools[BulletType.Normal] = new Queue<GameObject>();
+        pools[BulletType.Laser] = new Queue<GameObject>();
+        totalCounts[BulletType.Normal] = 0;
+        totalCounts[BulletType.Laser] = 0;
+
+        WarmPool(BulletType.Normal);
+        WarmPool(BulletType.Laser);
     }
 
-    public GameObject GetObject()
+    public GameObject GetObject(BulletType bulletType)
     {
-        if (pool.Count == 0 && pool.Count < maxPoolSize)
+        Queue<GameObject> pool = pools[bulletType];
+
+        if (pool.Count == 0 && totalCounts[bulletType] < maxPoolSize)
         {
-            CreateNewBullet(); // Tạo mới nếu chưa đạt max
+            CreateNewBullet(bulletType);
         }
 
-        if (pool.Count > 0)
+        while (pool.Count > 0)
         {
             GameObject obj = pool.Dequeue();
+            if (obj == null)
+            {
+                continue;
+            }
+
             obj.SetActive(true);
             return obj;
         }
 
-        Debug.LogWarning("Pool is empty and reached max size!");
+        Debug.LogWarning($"Pool for {bulletType} is empty and reached max size.");
         return null;
     }
 
     public void ReturnObject(GameObject obj)
     {
+        if (obj == null)
+        {
+            return;
+        }
+
         obj.SetActive(false);
+
+        Bullet bullet = obj.GetComponent<Bullet>();
+        if (bullet == null)
+        {
+            return;
+        }
+
+        Queue<GameObject> pool = pools[bullet.BulletType];
         if (!pool.Contains(obj))
         {
             pool.Enqueue(obj);
         }
     }
 
-    private void CreateNewBullet()
+    private void WarmPool(BulletType bulletType)
     {
-        GameObject obj = Instantiate(bulletPrefab, this.transform);
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            CreateNewBullet(bulletType);
+        }
+    }
+
+    private void CreateNewBullet(BulletType bulletType)
+    {
+        GameObject prefab = bulletType == BulletType.Laser ? laserBulletPrefab : normalBulletPrefab;
+        if (prefab == null)
+        {
+            Debug.LogWarning($"Missing prefab for bullet type {bulletType}");
+            return;
+        }
+
+        GameObject obj = Instantiate(prefab, transform);
         obj.SetActive(false);
-        pool.Enqueue(obj);
+        pools[bulletType].Enqueue(obj);
+        totalCounts[bulletType]++;
     }
 }

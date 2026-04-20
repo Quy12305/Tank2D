@@ -7,6 +7,7 @@ public class Shooting : MonoBehaviour
     public ObjectPool bulletPool;
     public Transform  firePoint;
     public float      bulletSpeed = 20f;
+    public BulletType bulletType = BulletType.Normal;
 
     void Update()
     {
@@ -18,9 +19,17 @@ public class Shooting : MonoBehaviour
 
     void Shoot()
     {
-        GameObject bullet = bulletPool.GetObject();
+        GameObject bullet = bulletPool.GetObject(bulletType);
+        if (bullet == null)
+        {
+            return;
+        }
+
         bullet.transform.position = firePoint.position;
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-        rb.velocity = firePoint.right * bulletSpeed;
+        if (rb != null)
+        {
+            rb.velocity = firePoint.right * bulletSpeed;
+        }
     }
 }

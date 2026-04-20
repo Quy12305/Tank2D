@@ -12,11 +12,7 @@ public class Level : MonoBehaviour
 
     public bool CheckWinModeBot()
     {
-        if (this.BotInMap() == 0)
-        {
-            return true;
-        }
-        return false;
+        return TankSpawner.Instance != null && TankSpawner.Instance.GetRemainingEnemyCount() == 0;
     }
 
     public bool CheckWinModeGem(int gem)
