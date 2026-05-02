@@ -1,7 +1,8 @@
 public enum BulletType
 {
     Normal,
-    Laser
+    Laser,
+    Freeze
 }
 
 public enum BotBehaviorType

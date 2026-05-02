@@ -26,7 +26,4 @@ MonoBehaviour:
   sentryBotCount: 1
   maxActiveMobileBots: 3
   respawnThreshold: 1
-  spawnBatchSize: 2
-  spawnInterval: 2
   breakableWallDensity: 0
-  baseWallDensityReduction: 8

@@ -175,7 +175,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         int sinkBase = nodeMap[playerGridPos];
         List<int> sources = new List<int>();
         List<int> sourceBotIds = new List<int>();
-        List<Vector2Int> sourceGridPositions = new List<Vector2Int>();
 
         // Thêm bot vào sources
         foreach (var bot in enemyBots)
@@ -185,7 +184,6 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             {
                 sources.Add(nodeId);
                 sourceBotIds.Add(bot.GetInstanceID());
-                sourceGridPositions.Add(pos);
             }
         }
 
@@ -233,7 +231,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
         extendedFlow.AddEdge(sinkOut, sinkSuperNode, sources.Count, 0);
 
         // Tính toán flow
-        var result = extendedFlow.MinCostMaxFlow(sourceSuperNode, sinkSuperNode, sources.Count);
+        extendedFlow.MinCostMaxFlow(sourceSuperNode, sinkSuperNode, sources.Count);
 
         // Lấy paths và gán vào botPaths
         var paths = extendedFlow.GetAllPathsFromSources(sources.Select(s => s * 2).ToList());
@@ -276,11 +274,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
             Vector2Int.up,
             Vector2Int.down,
             Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(1, 1),
-            new Vector2Int(1, -1),
-            new Vector2Int(-1, 1),
-            new Vector2Int(-1, -1)
+            Vector2Int.right
         };
         foreach (var dir in dirs)
         {
@@ -292,10 +286,7 @@ public class DynamicFlowManager : Singleton<DynamicFlowManager>
 
     private int GetMoveCost(Vector2Int from, Vector2Int to)
     {
-        int dx = Mathf.Abs(from.x - to.x);
-        int dy = Mathf.Abs(from.y - to.y);
-        bool isDiagonal = dx == 1 && dy == 1;
-        return isDiagonal ? 14 : 10;
+        return 10;
     }
 
     // Lấy đường đi cho bot

@@ -53,6 +53,8 @@ public class LevelManager : Singleton<LevelManager>
     public void OnStart()
     {
         SetDataToGenMapAndBot();
+        ProgressionManager.Instance.Clear();
+        SkillSystemManager.Instance.InitializeForGameplayMode();
         LoadLevel();
         GameManager.Instance.ChangeState(GameState.GamePlay);
     }
@@ -93,7 +95,23 @@ public class LevelManager : Singleton<LevelManager>
         {
             levels.Clear();
             levels.AddRange(levelList);
+            currentMode = mode;
             levelIndex = GameDataLevel.Instance.LevelIndexByMode[mode];
+        }
+    }
+
+    public void ResetToDefaults()
+    {
+        currentMode = Mode.TankWarfare;
+        GameDataLevel.Instance.currentMode = Mode.TankWarfare;
+        GameDataLevel.Instance.LevelIndexByMode[Mode.TankWarfare] = 0;
+        GameDataLevel.Instance.LevelIndexByMode[Mode.GemQuest] = 0;
+        SetLevelData(currentMode);
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.SetLevelIndex(0);
+            UIManager.Instance.RefreshGameplayHud();
         }
     }
 
@@ -102,7 +120,7 @@ public class LevelManager : Singleton<LevelManager>
         var levelData = levels[levelIndex];
         MazeGenerator.Instance.height                = levelData.height;
         MazeGenerator.Instance.width                 = levelData.width;
-        MazeGenerator.Instance.wallDensity           = Mathf.Max(8, levelData.wallDensity - levelData.baseWallDensityReduction);
+        MazeGenerator.Instance.wallDensity           = levelData.wallDensity;
         MazeGenerator.Instance.minWallLength         = levelData.minWallLength;
         MazeGenerator.Instance.maxWallLength         = levelData.maxWallLength;
         MazeGenerator.Instance.maxWallThickness      = levelData.maxWallThickness;
@@ -114,8 +132,6 @@ public class LevelManager : Singleton<LevelManager>
         TankSpawner.Instance.sentryBotCount          = levelData.sentryBotCount;
         TankSpawner.Instance.maxActiveMobileBots     = Mathf.Max(1, levelData.maxActiveMobileBots);
         TankSpawner.Instance.respawnThreshold        = Mathf.Max(0, levelData.respawnThreshold);
-        TankSpawner.Instance.spawnBatchSize          = Mathf.Max(1, levelData.spawnBatchSize);
-        TankSpawner.Instance.spawnInterval           = Mathf.Max(0.25f, levelData.spawnInterval);
         this.currentLevel.gemToWin                  = levelData.gem;
     }
 }

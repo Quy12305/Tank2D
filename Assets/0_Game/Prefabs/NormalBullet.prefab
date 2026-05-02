@@ -129,6 +129,9 @@ MonoBehaviour:
   speed: 10
   timeToLive: 5
   damage: 20
+  bulletType: 0
+  laserDamageMultiplier: 0.6
+  freezeDuration: 5
 --- !u!58 &-3083185711418409503
 CircleCollider2D:
   m_ObjectHideFlags: 0

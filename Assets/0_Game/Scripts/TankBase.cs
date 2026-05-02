@@ -109,6 +109,35 @@ public abstract class TankBase : MonoBehaviour
         }
     }
 
+    public void SpawnSupportBullet(Vector3 position, Vector2 direction, BulletType bulletType, GameObject bulletOwnerOverride = null)
+    {
+        if (objectPool == null)
+        {
+            objectPool = FindObjectOfType<ObjectPool>();
+        }
+
+        if (objectPool == null)
+        {
+            return;
+        }
+
+        GameObject bullet = objectPool.GetObject(bulletType);
+        if (bullet == null)
+        {
+            return;
+        }
+
+        bullet.transform.position = position;
+        bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
+
+        Bullet bulletComponent = bullet.GetComponent<Bullet>();
+        if (bulletComponent != null)
+        {
+            bulletComponent.SetDirection(direction);
+            bulletComponent.Setup(bulletOwnerOverride != null ? bulletOwnerOverride : gameObject);
+        }
+    }
+
     public void TakeDamage(float damage)
     {
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);

@@ -19,10 +19,7 @@ public class LevelData : ScriptableObject
     public int sentryBotCount = 1;
     public int maxActiveMobileBots = 3;
     public int respawnThreshold = 1;
-    public int spawnBatchSize = 2;
-    public float spawnInterval = 2f;
 
     [Header("Map Expansion")]
     [Range(0, 100)] public int breakableWallDensity = 12;
-    public int baseWallDensityReduction = 8;
 }

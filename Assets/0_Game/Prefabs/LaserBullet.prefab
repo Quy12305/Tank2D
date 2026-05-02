@@ -131,6 +131,7 @@ MonoBehaviour:
   damage: 20
   bulletType: 1
   laserDamageMultiplier: 0.6
+  freezeDuration: 5
 --- !u!70 &8823757395158875195
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

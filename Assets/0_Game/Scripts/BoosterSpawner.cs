@@ -45,7 +45,9 @@ public class BoosterSpawner : MonoBehaviour
 
         if (LevelManager.Instance.CurrentMode == Mode.TankWarfare)
         {
-            GameObject boosterPrefab = this.boosterPrefabsModeBot[Random.Range(0, this.boosterPrefabsModeBot.Count)];
+            List<GameObject> filteredBoosters = boosterPrefabsModeBot.FindAll(prefab => prefab != null && !prefab.CompareTag("BoosterShoot"));
+            List<GameObject> source = filteredBoosters.Count > 0 ? filteredBoosters : boosterPrefabsModeBot;
+            GameObject boosterPrefab = source[Random.Range(0, source.Count)];
             Instantiate(boosterPrefab, spawnPosition, Quaternion.identity, transform);
         }
         else if (LevelManager.Instance.CurrentMode == Mode.GemQuest)

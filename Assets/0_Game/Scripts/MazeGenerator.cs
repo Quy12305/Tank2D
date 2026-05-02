@@ -22,6 +22,8 @@ public class MazeGenerator : Singleton<MazeGenerator>
     [Header("Breakable Walls")] [Range(0, 100)] public int breakableWallDensity = 12;
 
     private int[,]        map;
+    private int[,]        emptyRegionIds;
+    private Dictionary<int, int> emptyRegionSizes = new Dictionary<int, int>();
     private System.Random rand;
 
     private void Start()
@@ -64,6 +66,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
 
         map = GenerateMap();
         PlaceBreakableWalls();
+        RebuildEmptyRegions();
         GenerateMapInUnity();
     }
 
@@ -429,6 +432,79 @@ public class MazeGenerator : Singleton<MazeGenerator>
         return cells;
     }
 
+    public int GetEmptyRegionSize(Vector2Int cell)
+    {
+        if (emptyRegionIds == null || !IsWithinBounds(cell.x, cell.y) || GetCellType(cell.x, cell.y) != CellType.Empty)
+        {
+            return 0;
+        }
+
+        int regionId = emptyRegionIds[cell.x, cell.y];
+        return emptyRegionSizes.TryGetValue(regionId, out int size) ? size : 0;
+    }
+
+    public bool IsBreakableAdjacentToSameRegion(Vector2Int breakableCell, Vector2Int emptyOriginCell)
+    {
+        if (GetCellType(breakableCell.x, breakableCell.y) != CellType.BreakableWall ||
+            GetCellType(emptyOriginCell.x, emptyOriginCell.y) != CellType.Empty ||
+            emptyRegionIds == null)
+        {
+            return false;
+        }
+
+        int originRegionId = emptyRegionIds[emptyOriginCell.x, emptyOriginCell.y];
+        Vector2Int[] directions =
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        for (int i = 0; i < directions.Length; i++)
+        {
+            Vector2Int adjacent = breakableCell + directions[i];
+            if (!IsWithinBounds(adjacent.x, adjacent.y) || GetCellType(adjacent.x, adjacent.y) != CellType.Empty)
+            {
+                continue;
+            }
+
+            if (emptyRegionIds[adjacent.x, adjacent.y] == originRegionId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int GetLocalOpenCellScore(Vector2Int cell, int radius = 2)
+    {
+        if (GetCellType(cell.x, cell.y) != CellType.Empty)
+        {
+            return 0;
+        }
+
+        int score = 0;
+        for (int x = cell.x - radius; x <= cell.x + radius; x++)
+        {
+            for (int y = cell.y - radius; y <= cell.y + radius; y++)
+            {
+                if (!IsWithinBounds(x, y))
+                {
+                    continue;
+                }
+
+                if (GetCellType(x, y) == CellType.Empty)
+                {
+                    score++;
+                }
+            }
+        }
+
+        return score;
+    }
+
     public void RemoveBreakableWallAtWorld(Vector3 worldPosition)
     {
         Vector2Int gridPosition = WorldToGridPosition(worldPosition);
@@ -443,6 +519,7 @@ public class MazeGenerator : Singleton<MazeGenerator>
         }
 
         map[gridPosition.x, gridPosition.y] = (int)CellType.Empty;
+        RebuildEmptyRegions();
         OnMapChanged?.Invoke();
     }
 
@@ -500,5 +577,79 @@ public class MazeGenerator : Singleton<MazeGenerator>
             candidates.RemoveAt(randomIndex);
             map[cell.x, cell.y] = (int)CellType.BreakableWall;
         }
+    }
+
+    private void RebuildEmptyRegions()
+    {
+        if (map == null)
+        {
+            emptyRegionIds = null;
+            emptyRegionSizes.Clear();
+            return;
+        }
+
+        emptyRegionIds = new int[height, width];
+        emptyRegionSizes.Clear();
+
+        for (int x = 0; x < height; x++)
+        {
+            for (int y = 0; y < width; y++)
+            {
+                emptyRegionIds[x, y] = -1;
+            }
+        }
+
+        int regionId = 0;
+        Vector2Int[] directions =
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        for (int x = 0; x < height; x++)
+        {
+            for (int y = 0; y < width; y++)
+            {
+                if (GetCellType(x, y) != CellType.Empty || emptyRegionIds[x, y] != -1)
+                {
+                    continue;
+                }
+
+                int regionSize = 0;
+                Queue<Vector2Int> queue = new Queue<Vector2Int>();
+                queue.Enqueue(new Vector2Int(x, y));
+                emptyRegionIds[x, y] = regionId;
+
+                while (queue.Count > 0)
+                {
+                    Vector2Int current = queue.Dequeue();
+                    regionSize++;
+
+                    for (int i = 0; i < directions.Length; i++)
+                    {
+                        Vector2Int next = current + directions[i];
+                        if (!IsWithinBounds(next.x, next.y) ||
+                            GetCellType(next.x, next.y) != CellType.Empty ||
+                            emptyRegionIds[next.x, next.y] != -1)
+                        {
+                            continue;
+                        }
+
+                        emptyRegionIds[next.x, next.y] = regionId;
+                        queue.Enqueue(next);
+                    }
+                }
+
+                emptyRegionSizes[regionId] = regionSize;
+                regionId++;
+            }
+        }
+    }
+
+    private bool IsWithinBounds(int x, int y)
+    {
+        return x >= 0 && x < height && y >= 0 && y < width;
     }
 }

@@ -21,12 +21,9 @@ MonoBehaviour:
   maxWallLength: 7
   maxWallThickness: 1
   gem: 0
-  smartBotCount: 4
-  dumbBotCount: 2
-  sentryBotCount: 1
-  maxActiveMobileBots: 3
-  respawnThreshold: 1
-  spawnBatchSize: 2
-  spawnInterval: 2
-  breakableWallDensity: 50
-  baseWallDensityReduction: 8
+  smartBotCount: 10
+  dumbBotCount: 10
+  sentryBotCount: 3
+  maxActiveMobileBots: 4
+  respawnThreshold: 2
+  breakableWallDensity: 30
