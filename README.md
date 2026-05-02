@@ -17,10 +17,18 @@ Truoc khi lam viec voi codebase, doc file sau:
 File nay da duoc cap nhat theo he thong hien tai cua project, bao gom:
 - spawn bot theo nguong
 - `Smart`, `Dumb`, `Sentry`
-- `NormalBullet` va `LaserBullet` la 2 prefab rieng
+- `NormalBullet`, `LaserBullet`, `FreezeBullet` la 3 prefab rieng
 - breakable wall generate theo `breakableWallDensity`
 - minimap marker-layer setup
 - HUD combat chi hien trong mode `TankWarfare`
+- fake loading overlay scene-based khi vao app
+- timer / progression / daily reward systems
+- progression-linked skill selection system
+- daily reward config bang `ScriptableObject`
+- skill config bang `SkillSystemConfig` (`title`, `description`, `icon`, `duration`)
+- pathfinding bot di 4 huong, khong di cheo
+- mobile bot chi spawn tren path / o trong, uu tien vung rong
+- `Wall Density` va `Breakable Wall Density` la 2 ti le doc lap
 
 ## Maintenance Note
 

@@ -6,6 +6,7 @@ public class ObjectPool : MonoBehaviour
     [Header("Bullet Prefabs")]
     [SerializeField] private GameObject normalBulletPrefab;
     [SerializeField] private GameObject laserBulletPrefab;
+    [SerializeField] private GameObject freezeBulletPrefab;
 
     [Header("Pool Settings")]
     [SerializeField] private int initialPoolSize = 30;
@@ -18,11 +19,14 @@ public class ObjectPool : MonoBehaviour
     {
         pools[BulletType.Normal] = new Queue<GameObject>();
         pools[BulletType.Laser] = new Queue<GameObject>();
+        pools[BulletType.Freeze] = new Queue<GameObject>();
         totalCounts[BulletType.Normal] = 0;
         totalCounts[BulletType.Laser] = 0;
+        totalCounts[BulletType.Freeze] = 0;
 
         WarmPool(BulletType.Normal);
         WarmPool(BulletType.Laser);
+        WarmPool(BulletType.Freeze);
     }
 
     public GameObject GetObject(BulletType bulletType)
@@ -82,7 +86,13 @@ public class ObjectPool : MonoBehaviour
 
     private void CreateNewBullet(BulletType bulletType)
     {
-        GameObject prefab = bulletType == BulletType.Laser ? laserBulletPrefab : normalBulletPrefab;
+        GameObject prefab = bulletType switch
+        {
+            BulletType.Laser => laserBulletPrefab,
+            BulletType.Freeze => freezeBulletPrefab,
+            _ => normalBulletPrefab
+        };
+
         if (prefab == null)
         {
             Debug.LogWarning($"Missing prefab for bullet type {bulletType}");

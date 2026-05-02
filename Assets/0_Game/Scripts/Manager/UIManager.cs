@@ -30,9 +30,37 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private Button           switchAmmoButton;
     [SerializeField] private TMP_Text         switchAmmoText;
     [SerializeField] private MiniMapController miniMapController;
+    [SerializeField] private FakeLoadingOverlayUI loadingOverlay;
+    [SerializeField] private GameplayProgressionHud progressionHud;
+    [SerializeField] private DailyRewardPanelUI dailyRewardPanel;
+    [SerializeField] private SkillSelectionPanelUI skillSelectionPanel;
+    [SerializeField] private bool playStartupLoading = true;
     private                  PlayerTank       boundPlayer;
+    private                  ProgressionTracker activeProgressionTracker;
 
-    private void Start() { this.OpenMainMenuUI(); }
+    private void Start()
+    {
+        InitializeSceneUi();
+        DailyRewardManager.Instance.ForceRefresh();
+
+        if (playStartupLoading && loadingOverlay != null)
+        {
+            loadingOverlay.Play(null, OpenMainMenuUI);
+            return;
+        }
+
+        this.OpenMainMenuUI();
+    }
+
+    private void OnEnable()
+    {
+        SkillSystemManager.Instance.ProgressionTrackerChanged += BindProgressionTracker;
+    }
+
+    private void OnDisable()
+    {
+        SkillSystemManager.Instance.ProgressionTrackerChanged -= BindProgressionTracker;
+    }
 
     public void OpenMainMenuUI()
     {
@@ -41,6 +69,8 @@ public class UIManager : Singleton<UIManager>
         this.CloseAllUI();
         this.mainmenuUI.SetActive(true);
         SoundManager.Instance.OnStopMove();
+        BindProgressionTracker(null);
+        RefreshRuntimeUiVisibility();
 
         foreach (GameObject button in this.ButtonInMainMenu)
         {
@@ -58,6 +88,7 @@ public class UIManager : Singleton<UIManager>
         NotificationUI.SetActive(true);
         SoundManager.Instance.OnInGame();
         RefreshGameplayHud();
+        RefreshRuntimeUiVisibility();
         ScaleNotification();
         StartCoroutine(RefreshGameplayButtonsNextFrame());
     }
@@ -65,12 +96,14 @@ public class UIManager : Singleton<UIManager>
     public void OpenFinishUI()
     {
         this.winUI.SetActive(true);
+        RefreshRuntimeUiVisibility();
         SoundManager.Instance.OnWin();
     }
 
     public void OpenLoseUI()
     {
         this.loseUI.SetActive(true);
+        RefreshRuntimeUiVisibility();
         SoundManager.Instance.OnLose();
     }
 
@@ -118,28 +151,20 @@ public class UIManager : Singleton<UIManager>
     public void PlayButton()
     {
         SoundManager.Instance.OnClickButton();
-        LevelManager.Instance.OnStart();
-        this.OpenGamePlayUI();
-        RefreshGameplayHud();
+        StartGameplayFlow();
     }
 
     public void ReplayButton()
     {
         SoundManager.Instance.OnClickButton();
-        LevelManager.Instance.OnStart();
-        this.OpenGamePlayUI();
-        RefreshGameplayHud();
-        this.textGem.text = "0";
+        StartGameplayFlow();
     }
 
     public void NextButton()
     {
         SoundManager.Instance.OnClickButton();
         LevelManager.Instance.NextLevel();
-        LevelManager.Instance.OnStart();
-        this.OpenGamePlayUI();
-        RefreshGameplayHud();
-        this.textGem.text = "0";
+        StartGameplayFlow();
     }
 
     public void HomeButton()
@@ -228,7 +253,6 @@ public class UIManager : Singleton<UIManager>
 
     public void UpdateTextBotInMap()
     {
-        Debug.Log("UpdateTextBotInMap");
         if (TankSpawner.Instance != null)
         {
             this.textBotInMap.text = TankSpawner.Instance.GetRemainingEnemyCount().ToString();
@@ -269,6 +293,7 @@ public class UIManager : Singleton<UIManager>
         this.settingsUI.SetActive(false);
         this.gameplayUI.SetActive(false);
         this.modeUI.SetActive(false);
+        this.shopUI.SetActive(false);
     }
 
     private IEnumerator RefreshGameplayButtonsNextFrame()
@@ -316,7 +341,13 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
-        switchAmmoText.text = bulletType == BulletType.Normal ? "Bullet" : "Lazer";
+        switchAmmoText.text = bulletType switch
+        {
+            BulletType.Normal => "Bullet",
+            BulletType.Laser => "Laser",
+            BulletType.Freeze => "Freeze",
+            _ => "Bullet"
+        };
     }
 
     public void RefreshGameplayHud()
@@ -325,6 +356,8 @@ public class UIManager : Singleton<UIManager>
         {
             return;
         }
+
+        EnsureProgressionHudReference();
 
         bool isTankMode = LevelManager.Instance.CurrentMode == Mode.TankWarfare;
 
@@ -355,6 +388,11 @@ public class UIManager : Singleton<UIManager>
             miniMapController.gameObject.SetActive(isTankMode);
         }
 
+        if (progressionHud != null)
+        {
+            progressionHud.gameObject.SetActive(isTankMode);
+        }
+
         TMP_Text notificationText = NotificationUI != null ? NotificationUI.GetComponentInChildren<TMP_Text>() : null;
         if (notificationText != null)
         {
@@ -362,5 +400,144 @@ public class UIManager : Singleton<UIManager>
                 ? "\"Survive and destroy all enemy tanks to win. If you're destroyed, it's game over\""
                 : "\"Survive and collect all magical Gems to win. If you're destroyed, it's game over\"";
         }
+    }
+
+    private void StartGameplayFlow()
+    {
+        LevelManager.Instance.OnStart();
+        this.OpenGamePlayUI();
+        RefreshGameplayHud();
+
+        if (this.textGem != null)
+        {
+            this.textGem.text = "0";
+        }
+    }
+
+    private void InitializeSceneUi()
+    {
+        EnsureProgressionHudReference();
+
+        if (loadingOverlay != null)
+        {
+            loadingOverlay.HideImmediate();
+        }
+
+        if (dailyRewardPanel != null)
+        {
+            dailyRewardPanel.HideImmediate();
+            dailyRewardPanel.Refresh();
+        }
+
+        if (skillSelectionPanel != null)
+        {
+            skillSelectionPanel.HideImmediate();
+        }
+
+        if (progressionHud != null)
+        {
+            progressionHud.BindTracker(null);
+        }
+    }
+
+    private void RefreshRuntimeUiVisibility()
+    {
+        if (dailyRewardPanel != null)
+        {
+            bool showDailyRewardButton = mainmenuUI != null && mainmenuUI.activeSelf;
+            dailyRewardPanel.gameObject.SetActive(showDailyRewardButton);
+            if (showDailyRewardButton)
+            {
+                dailyRewardPanel.Refresh();
+            }
+        }
+    }
+
+    public bool ShowSkillChoices(SkillType[] skillChoices)
+    {
+        EnsureSkillSelectionPanelReference();
+
+        if (skillSelectionPanel == null)
+        {
+            Time.timeScale = 1f;
+            return false;
+        }
+
+        if (NotificationUI != null)
+        {
+            NotificationUI.SetActive(false);
+        }
+
+        bool didShow = skillSelectionPanel.Show(
+            skillChoices,
+            GetSkillDuration,
+            GetSkillTitle,
+            GetSkillDescription,
+            GetSkillIcon,
+            selectedSkill =>
+        {
+            SkillSystemManager.Instance.CompleteSkillSelection(selectedSkill);
+            Time.timeScale = 1f;
+        });
+
+        if (!didShow)
+        {
+            Time.timeScale = 1f;
+            return false;
+        }
+
+        Time.timeScale = 0f;
+        return true;
+    }
+
+    private void EnsureSkillSelectionPanelReference()
+    {
+        if (skillSelectionPanel != null)
+        {
+            return;
+        }
+
+        skillSelectionPanel = FindObjectOfType<SkillSelectionPanelUI>(true);
+    }
+
+    private float GetSkillDuration(SkillType skillType)
+    {
+        return SkillSystemManager.Instance.GetSkillDuration(skillType);
+    }
+
+    private string GetSkillTitle(SkillType skillType)
+    {
+        return SkillSystemManager.Instance.GetSkillTitle(skillType);
+    }
+
+    private string GetSkillDescription(SkillType skillType)
+    {
+        return SkillSystemManager.Instance.GetSkillDescription(skillType);
+    }
+
+    private Sprite GetSkillIcon(SkillType skillType)
+    {
+        return SkillSystemManager.Instance.GetSkillIcon(skillType);
+    }
+
+    private void BindProgressionTracker(ProgressionTracker tracker)
+    {
+        activeProgressionTracker = tracker;
+        EnsureProgressionHudReference();
+
+        if (progressionHud != null)
+        {
+            progressionHud.BindTracker(activeProgressionTracker);
+        }
+    }
+
+    private void EnsureProgressionHudReference()
+    {
+        if (progressionHud != null)
+        {
+            return;
+        }
+
+        progressionHud = FindObjectOfType<GameplayProgressionHud>(true);
     }
 }

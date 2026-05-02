@@ -39,6 +39,5 @@ public class BreakableWall : MonoBehaviour
         }
 
         cachedRenderer.color = Color.Lerp(originalColor, new Color(0.55f, 0.32f, 0.32f, 1f), 0.6f);
-        transform.localScale = new Vector3(0.96f, 0.96f, 1f);
     }
 }

@@ -16,7 +16,20 @@ public class PlayerTank : TankBase
     public                               VariableJoystick   variableJoystick;
     private                              int                gem = 0;
     private                              BulletType         currentBulletType = BulletType.Normal;
+    private                              float              baseShootCooldown;
+    private                              Sprite             supportSkillSprite;
+    private readonly                     List<GameTimer>    barrelUpgradeTimers = new List<GameTimer>();
+    private                              int                temporaryBarrelUpgradeStacks;
+    private                              GameTimer          shieldTimer;
+    private                              GameTimer          sideTurretTimer;
+    private                              GameTimer          orbitBladeTimer;
+    private                              GameObject         shieldVisual;
+    private                              GameObject         sideTurretRoot;
+    private                              GameObject         orbitBladeRoot;
     public                               int                Gem => this.gem;
+    public                               Sprite             SupportSkillSprite => supportSkillSprite;
+    public                               int                CurrentBarrelLevel => rayShootCount;
+    public                               bool               HasActiveShield => shieldTimer != null && shieldTimer.IsRunning && !shieldTimer.IsCompleted;
 
     [SerializeField] private List<GameObject> barrel;
     [SerializeField] private List<GameObject> tankCore;
@@ -32,7 +45,10 @@ public class PlayerTank : TankBase
         UIManager.Instance.BindPlayer(this);
         UIManager.Instance.UpdateAmmoMode(currentBulletType);
         UIManager.Instance.RefreshGameplayHud();
+        baseShootCooldown = shootCooldown;
         SetTankData(TankManager.Instance.currentTankIndex, TankManager.Instance.currentSpeed, TankManager.Instance.currentHealth,TankManager.Instance.currentDamage);
+        ResolveSupportSprite();
+        SkillSystemManager.Instance.BindPlayer(this);
     }
 
     void Update()
@@ -46,7 +62,7 @@ public class PlayerTank : TankBase
             if (boosterTime <= 0f)
             {
                 isBoosterActive = false;
-                rayShootCount   = 1;
+                ApplyBarrelVisual();
                 ChangeSkin();
                 moveSpeed   = 5f;
                 boosterTime = 11f;
@@ -63,6 +79,7 @@ public class PlayerTank : TankBase
         this.moveSpeed = speed;
         this.maxHealth = health;
         this.damage    = damage;
+        supportSkillSprite = ResolveSpriteFromActiveModel();
     }
 
     private void HandleMovement()
@@ -132,7 +149,16 @@ public class PlayerTank : TankBase
 
     public void ToggleBulletType()
     {
-        currentBulletType = currentBulletType == BulletType.Normal ? BulletType.Laser : BulletType.Normal;
+        BulletType[] bulletOrder =
+        {
+            BulletType.Normal,
+            BulletType.Laser,
+            BulletType.Freeze
+        };
+
+        int currentIndex = Array.IndexOf(bulletOrder, currentBulletType);
+        currentIndex = (currentIndex + 1) % bulletOrder.Length;
+        currentBulletType = bulletOrder[currentIndex];
         UIManager.Instance.UpdateAmmoMode(currentBulletType);
     }
 
@@ -187,7 +213,7 @@ public class PlayerTank : TankBase
         if (other.CompareTag("BoosterShoot"))
         {
             isBoosterActive = true;
-            rayShootCount++;
+            rayShootCount = Mathf.Min(3, rayShootCount + 1);
             ChangeSkin();
             Destroy(other.gameObject);
             SoundManager.Instance.OnBooster();
@@ -246,5 +272,271 @@ public class PlayerTank : TankBase
         {
             LevelManager.Instance.OnLose();
         });
+    }
+
+    public void ApplyRapidFireSkill(float cooldownMultiplier = 0.75f)
+    {
+        shootCooldown = Mathf.Max(0.08f, baseShootCooldown * cooldownMultiplier);
+    }
+
+    public void ResetProgressionRewards()
+    {
+        shootCooldown = baseShootCooldown;
+    }
+
+    public bool TryBlockEnemyProjectile()
+    {
+        return HasActiveShield;
+    }
+
+    public void ApplyTimedSkill(SkillType skillType, float duration)
+    {
+        switch (skillType)
+        {
+            case SkillType.Shield:
+                ActivateShield(duration);
+                break;
+
+            case SkillType.BarrelUpgrade:
+                ActivateBarrelUpgrade(duration);
+                break;
+
+            case SkillType.SideTurrets:
+                ActivateSideTurrets(duration);
+                break;
+
+            case SkillType.OrbitBlades:
+                ActivateOrbitBlades(duration);
+                break;
+        }
+    }
+
+    private void ActivateShield(float duration)
+    {
+        RestartSkillTimer(ref shieldTimer, "skill-shield", duration, DeactivateShield);
+
+        if (shieldVisual == null)
+        {
+            shieldVisual = CreateSkillVisual("ShieldVisual", new Color(0.24f, 0.84f, 1f, 0.36f), 1.55f);
+            shieldVisual.AddComponent<PlayerShieldSkillVisual>();
+        }
+
+        shieldVisual.SetActive(true);
+    }
+
+    private void DeactivateShield(GameTimer timer)
+    {
+        if (shieldVisual != null)
+        {
+            shieldVisual.SetActive(false);
+        }
+
+        shieldTimer = null;
+    }
+
+    private void ActivateBarrelUpgrade(float duration)
+    {
+        if (rayShootCount >= 3)
+        {
+            return;
+        }
+
+        temporaryBarrelUpgradeStacks++;
+        rayShootCount = Mathf.Min(3, rayShootCount + 1);
+        ChangeSkin();
+
+        GameTimer timer = TimerManager.Instance.CreateTimer(
+            $"skill-barrel-{GetInstanceID()}-{Time.frameCount}-{barrelUpgradeTimers.Count}",
+            duration,
+            TimerDirection.CountDown,
+            false,
+            false,
+            false);
+        timer.Completed += HandleBarrelUpgradeExpired;
+        timer.Start();
+        barrelUpgradeTimers.Add(timer);
+    }
+
+    private void HandleBarrelUpgradeExpired(GameTimer timer)
+    {
+        if (timer != null)
+        {
+            timer.Completed -= HandleBarrelUpgradeExpired;
+            TimerManager.Instance.RemoveTimer(timer.Id);
+        }
+
+        barrelUpgradeTimers.Remove(timer);
+        temporaryBarrelUpgradeStacks = Mathf.Max(0, temporaryBarrelUpgradeStacks - 1);
+        ApplyBarrelVisual();
+    }
+
+    private void ActivateSideTurrets(float duration)
+    {
+        RestartSkillTimer(ref sideTurretTimer, "skill-side-turrets", duration, DeactivateSideTurrets);
+
+        if (sideTurretRoot == null)
+        {
+            sideTurretRoot = new GameObject("SideTurrets");
+            sideTurretRoot.transform.SetParent(transform, false);
+
+            CreateSupportTurret(sideTurretRoot.transform, new Vector3(-1.2f, 0f, 0f));
+            CreateSupportTurret(sideTurretRoot.transform, new Vector3(1.2f, 0f, 0f));
+        }
+
+        sideTurretRoot.SetActive(true);
+    }
+
+    private void DeactivateSideTurrets(GameTimer timer)
+    {
+        if (sideTurretRoot != null)
+        {
+            sideTurretRoot.SetActive(false);
+        }
+
+        sideTurretTimer = null;
+    }
+
+    private void ActivateOrbitBlades(float duration)
+    {
+        RestartSkillTimer(ref orbitBladeTimer, "skill-orbit-blades", duration, DeactivateOrbitBlades);
+
+        if (orbitBladeRoot == null)
+        {
+            orbitBladeRoot = new GameObject("OrbitBlades");
+            PlayerOrbitBladeSkill orbitSkill = orbitBladeRoot.AddComponent<PlayerOrbitBladeSkill>();
+            orbitSkill.Initialize(this);
+        }
+
+        orbitBladeRoot.SetActive(true);
+    }
+
+    private void DeactivateOrbitBlades(GameTimer timer)
+    {
+        if (orbitBladeRoot != null)
+        {
+            orbitBladeRoot.SetActive(false);
+        }
+
+        orbitBladeTimer = null;
+    }
+
+    private void RestartSkillTimer(ref GameTimer timer, string skillKey, float duration, Action<GameTimer> onComplete)
+    {
+        if (timer != null)
+        {
+            timer.Completed -= onComplete;
+            TimerManager.Instance.RemoveTimer(timer.Id);
+        }
+
+        timer = TimerManager.Instance.CreateTimer(
+            $"{skillKey}-{GetInstanceID()}",
+            duration,
+            TimerDirection.CountDown,
+            false,
+            false,
+            false);
+        timer.Completed += onComplete;
+        timer.Start();
+    }
+
+    private void CreateSupportTurret(Transform parent, Vector3 offset)
+    {
+        GameObject turretObject = new GameObject($"SupportTurret_{offset.x}");
+        PlayerSupportTurretSkill turretSkill = turretObject.AddComponent<PlayerSupportTurretSkill>();
+        turretSkill.Initialize(this, offset);
+        turretObject.transform.SetParent(parent, false);
+    }
+
+    private GameObject CreateSkillVisual(string objectName, Color color, float radius)
+    {
+        GameObject visual = new GameObject(objectName);
+        visual.transform.SetParent(transform, false);
+
+        SpriteRenderer renderer = visual.AddComponent<SpriteRenderer>();
+        renderer.sprite = SupportSkillSprite;
+        renderer.color = color;
+        visual.transform.localScale = Vector3.one * radius;
+        return visual;
+    }
+
+    private void ApplyBarrelVisual()
+    {
+        int baseBarrelLevel = isBoosterActive ? Mathf.Max(1, rayShootCount) : 1;
+        rayShootCount = Mathf.Clamp(baseBarrelLevel + temporaryBarrelUpgradeStacks, 1, 3);
+        ChangeSkin();
+    }
+
+    private void ResolveSupportSprite()
+    {
+        supportSkillSprite = ResolveSpriteFromActiveModel();
+
+        if (supportSkillSprite == null)
+        {
+            SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                supportSkillSprite = spriteRenderer.sprite;
+            }
+        }
+    }
+
+    private Sprite ResolveSpriteFromActiveModel()
+    {
+        for (int i = 0; i < barrel.Count; i++)
+        {
+            SpriteRenderer spriteRenderer = barrel[i] != null ? barrel[i].GetComponentInChildren<SpriteRenderer>() : null;
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                return spriteRenderer.sprite;
+            }
+        }
+
+        for (int i = 0; i < tankCore.Count; i++)
+        {
+            if (!tankCore[i].activeInHierarchy)
+            {
+                continue;
+            }
+
+            SpriteRenderer spriteRenderer = tankCore[i].GetComponentInChildren<SpriteRenderer>();
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                return spriteRenderer.sprite;
+            }
+        }
+
+        return null;
+    }
+
+    private void OnDestroy()
+    {
+        CleanupTimer(ref shieldTimer, DeactivateShield);
+        CleanupTimer(ref sideTurretTimer, DeactivateSideTurrets);
+        CleanupTimer(ref orbitBladeTimer, DeactivateOrbitBlades);
+
+        for (int i = 0; i < barrelUpgradeTimers.Count; i++)
+        {
+            if (barrelUpgradeTimers[i] == null)
+            {
+                continue;
+            }
+
+            barrelUpgradeTimers[i].Completed -= HandleBarrelUpgradeExpired;
+            TimerManager.Instance.RemoveTimer(barrelUpgradeTimers[i].Id);
+        }
+
+        barrelUpgradeTimers.Clear();
+    }
+
+    private void CleanupTimer(ref GameTimer timer, Action<GameTimer> onComplete)
+    {
+        if (timer == null)
+        {
+            return;
+        }
+
+        timer.Completed -= onComplete;
+        TimerManager.Instance.RemoveTimer(timer.Id);
+        timer = null;
     }
 }

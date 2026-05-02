@@ -4,12 +4,14 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private Rigidbody2D rb;
+    private ObjectPool objectPool;
 
     [SerializeField] private float speed = 10f;
     [SerializeField] private float timeToLive = 4f;
     [SerializeField] private float damage = 20f;
     [SerializeField] private BulletType bulletType = BulletType.Normal;
     [SerializeField] [Range(0.1f, 1f)] private float laserDamageMultiplier = 0.6f;
+    [SerializeField] private float freezeDuration = 5f;
 
     private float currentTime;
     private GameObject owner;
@@ -20,6 +22,7 @@ public class Bullet : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        objectPool = FindObjectOfType<ObjectPool>();
         if (rb != null)
         {
             rb.bodyType = RigidbodyType2D.Dynamic;
@@ -31,6 +34,14 @@ public class Bullet : MonoBehaviour
     private void OnEnable()
     {
         currentTime = timeToLive;
+    }
+
+    private void OnDisable()
+    {
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+        }
     }
 
     private void SetDamage(float damageValue)
@@ -67,13 +78,8 @@ public class Bullet : MonoBehaviour
         TankBase tank = collision.gameObject.GetComponent<TankBase>();
         if (tank != null)
         {
-            tank.TakeDamage(damage);
+            ApplyHitToTank(tank);
             ReturnToPool();
-
-            DOVirtual.DelayedCall(0.01f, () =>
-            {
-                UIManager.Instance.UpdateTextBotInMap();
-            });
         }
     }
 
@@ -95,13 +101,8 @@ public class Bullet : MonoBehaviour
             return;
         }
 
-        tank.TakeDamage(damage);
+        ApplyHitToTank(tank);
         ReturnToPool();
-
-        DOVirtual.DelayedCall(0.01f, () =>
-        {
-            UIManager.Instance.UpdateTextBotInMap();
-        });
     }
 
     private void Update()
@@ -142,10 +143,39 @@ public class Bullet : MonoBehaviour
 
     private void ReturnToPool()
     {
-        ObjectPool pool = FindObjectOfType<ObjectPool>();
-        if (pool != null)
+        if (objectPool == null)
         {
-            pool.ReturnObject(gameObject);
+            objectPool = FindObjectOfType<ObjectPool>();
         }
+
+        if (objectPool != null)
+        {
+            objectPool.ReturnObject(gameObject);
+        }
+    }
+
+    private void ApplyHitToTank(TankBase tank)
+    {
+        if (tank is PlayerTank playerTank &&
+            ownerLayer == LayerMask.NameToLayer("Enemy") &&
+            playerTank.TryBlockEnemyProjectile())
+        {
+            return;
+        }
+
+        tank.TakeDamage(damage);
+
+        if (bulletType == BulletType.Freeze && tank is BotTank botTank)
+        {
+            botTank.ApplyFreeze(freezeDuration);
+        }
+
+        DOVirtual.DelayedCall(0.01f, () =>
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.UpdateTextBotInMap();
+            }
+        });
     }
 }

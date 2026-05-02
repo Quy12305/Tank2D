@@ -82,4 +82,22 @@ public class TankManager : Singleton<TankManager>
             TankStateByIndex[item.tankIndex] = item.tankState;
         }
     }
+
+    public void ResetToDefaults()
+    {
+        currentTankIndex = 0;
+
+        TankStateByIndex.Clear();
+        TankStateByIndex[0] = TankState.Equipped;
+        TankStateByIndex[1] = TankState.NotBuy;
+        TankStateByIndex[2] = TankState.NotBuy;
+        TankStateByIndex[3] = TankState.NotBuy;
+
+        if (playerDataList != null && playerDataList.Count > 0)
+        {
+            currentHealth = playerDataList[currentTankIndex].health;
+            currentSpeed = playerDataList[currentTankIndex].speed;
+            currentDamage = playerDataList[currentTankIndex].damage;
+        }
+    }
 }

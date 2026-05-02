@@ -19,17 +19,19 @@ public class TankSpawner : Singleton<TankSpawner>
     public int sentryBotCount = 1;
     public int maxActiveMobileBots = 3;
     public int respawnThreshold = 1;
-    public int spawnBatchSize = 2;
-    public float spawnInterval = 2f;
+    [SerializeField] private float minDistanceFromPlayerForMobileSpawn = 7.5f;
     [SerializeField] private float minDistanceFromPlayerForSentry = 5f;
     [SerializeField] private float minDistanceBetweenSentries = 4f;
     [SerializeField] private int sentryInnerBorderPadding = 2;
+    [SerializeField] private int minimumSpawnRegionSize = 14;
+    [SerializeField] private int minimumSpawnOpenScore = 12;
 
     private readonly Queue<BotBehaviorType> pendingMobileBots = new Queue<BotBehaviorType>();
     private readonly List<BotTank> activeMobileBots = new List<BotTank>();
     private readonly List<BotTank> activeSentryBots = new List<BotTank>();
-    private float spawnTimer;
     public static event System.Action<Transform> OnPlayerSpawned;
+    public static event System.Action<int> OnEnemyRosterInitialized;
+    public static event System.Action<BotTank> OnBotDestroyed;
 
     private void Start()
     {
@@ -42,42 +44,11 @@ public class TankSpawner : Singleton<TankSpawner>
         mazeGenerator.OnMapGenerationCompleted += HandleMapGenerated;
     }
 
-    private void Update()
-    {
-        if (!GameManager.Instance.IsState(GameState.GamePlay))
-        {
-            return;
-        }
-
-        if (pendingMobileBots.Count == 0)
-        {
-            return;
-        }
-
-        if (GetAliveMobileBotCount() > respawnThreshold)
-        {
-            return;
-        }
-
-        if (GetAliveMobileBotCount() >= maxActiveMobileBots)
-        {
-            return;
-        }
-
-        spawnTimer += Time.deltaTime;
-        if (spawnTimer >= spawnInterval)
-        {
-            SpawnNextMobileWave();
-            spawnTimer = 0f;
-        }
-    }
-
     private void HandleMapGenerated()
     {
         activeMobileBots.Clear();
         activeSentryBots.Clear();
         pendingMobileBots.Clear();
-        spawnTimer = 0f;
 
         SpawnPlayerAndEnemies();
     }
@@ -91,16 +62,18 @@ public class TankSpawner : Singleton<TankSpawner>
             return;
         }
 
-        Vector3 playerPosition = GetValidatedSpawnPosition(emptyCells);
+        Vector2Int playerCell = GetValidatedSpawnCell(emptyCells);
+        Vector3 playerPosition = mazeGenerator.GridToWorldPosition(playerCell.x, playerCell.y);
         GameObject player = SpawnTank(playerTankPrefab, playerPosition, BotBehaviorType.Smart);
         OnPlayerSpawned?.Invoke(player.transform);
 
         BuildMobileQueue();
         SpawnSentryBots();
-        SpawnNextMobileWave(true);
+        SpawnNextMobileWave();
 
         FindObjectOfType<DynamicFlowManager>()?.UpdateTarget(player.transform.position);
         UIManager.Instance.UpdateTextBotInMap();
+        OnEnemyRosterInitialized?.Invoke(GetRemainingEnemyCount());
     }
 
     private void BuildMobileQueue()
@@ -151,7 +124,7 @@ public class TankSpawner : Singleton<TankSpawner>
                 continue;
             }
 
-            BotTank sentry = SpawnBot(position, BotBehaviorType.Sentry);
+            BotTank sentry = SpawnBot(cell, BotBehaviorType.Sentry);
             if (sentry != null)
             {
                 activeSentryBots.Add(sentry);
@@ -212,16 +185,21 @@ public class TankSpawner : Singleton<TankSpawner>
         return true;
     }
 
-    private void SpawnNextMobileWave(bool immediate = false)
+    private void SpawnNextMobileWave()
     {
         int aliveMobile = GetAliveMobileBotCount();
+        if (aliveMobile > respawnThreshold)
+        {
+            return;
+        }
+
         int availableSlots = Mathf.Max(0, maxActiveMobileBots - aliveMobile);
         if (availableSlots == 0)
         {
             return;
         }
 
-        int countToSpawn = immediate ? availableSlots : Mathf.Min(spawnBatchSize, availableSlots);
+        int countToSpawn = availableSlots;
         for (int i = 0; i < countToSpawn; i++)
         {
             if (pendingMobileBots.Count == 0)
@@ -230,7 +208,8 @@ public class TankSpawner : Singleton<TankSpawner>
             }
 
             BotBehaviorType botType = pendingMobileBots.Dequeue();
-            BotTank bot = SpawnBot(GetRandomEmptySpawnPosition(), botType);
+            Vector2Int spawnCell = GetRandomEmptySpawnCell();
+            BotTank bot = spawnCell.x < 0 ? null : SpawnBot(spawnCell, botType);
             if (bot != null)
             {
                 activeMobileBots.Add(bot);
@@ -246,13 +225,19 @@ public class TankSpawner : Singleton<TankSpawner>
         DOVirtual.DelayedCall(0.1f, () => UIManager.Instance.UpdateTextBotInMap());
     }
 
-    private BotTank SpawnBot(Vector3 position, BotBehaviorType botType)
+    private BotTank SpawnBot(Vector2Int spawnCell, BotBehaviorType botType)
     {
-        if (position == Vector3.positiveInfinity)
+        if (spawnCell.x < 0 || spawnCell.y < 0)
         {
             return null;
         }
 
+        if (botType != BotBehaviorType.Sentry && mazeGenerator.GetCellType(spawnCell.x, spawnCell.y) != CellType.Empty)
+        {
+            return null;
+        }
+
+        Vector3 position = mazeGenerator.GridToWorldPosition(spawnCell.x, spawnCell.y);
         GameObject prefab = botType == BotBehaviorType.Sentry && sentryTankPrefab != null ? sentryTankPrefab : enemyTankPrefab;
         GameObject tank = SpawnTank(prefab, position, botType);
         return tank != null ? tank.GetComponent<BotTank>() : null;
@@ -276,41 +261,54 @@ public class TankSpawner : Singleton<TankSpawner>
         return tank;
     }
 
-    private Vector3 GetRandomEmptySpawnPosition()
+    private Vector2Int GetRandomEmptySpawnCell()
     {
         List<Vector2Int> emptyCells = mazeGenerator.GetEmptyCells();
+        emptyCells.Sort((a, b) => EvaluateSpawnCellScore(b).CompareTo(EvaluateSpawnCellScore(a)));
+        Transform player = GameObject.FindWithTag("Player")?.transform;
+
         while (emptyCells.Count > 0)
         {
-            int randomIndex = Random.Range(0, emptyCells.Count);
+            int candidatePoolSize = Mathf.Min(8, emptyCells.Count);
+            int randomIndex = Random.Range(0, candidatePoolSize);
             Vector2Int cell = emptyCells[randomIndex];
             emptyCells.RemoveAt(randomIndex);
 
             Vector3 position = mazeGenerator.GridToWorldPosition(cell.x, cell.y);
-            if (IsPositionValid(position))
+            if (mazeGenerator.GetCellType(cell.x, cell.y) == CellType.Empty &&
+                IsPositionValid(position) &&
+                IsPreferredSpawnCell(cell) &&
+                IsFarEnoughFromPlayer(position, player, minDistanceFromPlayerForMobileSpawn))
             {
-                return position;
+                return cell;
             }
         }
 
-        return Vector3.positiveInfinity;
+        return new Vector2Int(-1, -1);
     }
 
-    private Vector3 GetValidatedSpawnPosition(List<Vector2Int> cells)
+    private Vector2Int GetValidatedSpawnCell(List<Vector2Int> cells)
     {
+        cells.Sort((a, b) => EvaluateSpawnCellScore(b).CompareTo(EvaluateSpawnCellScore(a)));
+
         while (cells.Count > 0)
         {
-            int randomIndex = Random.Range(0, cells.Count);
+            int candidatePoolSize = Mathf.Min(10, cells.Count);
+            int randomIndex = Random.Range(0, candidatePoolSize);
             Vector2Int cell = cells[randomIndex];
             cells.RemoveAt(randomIndex);
 
             Vector3 spawnPosition = mazeGenerator.GridToWorldPosition(cell.x, cell.y);
-            if (IsPositionValid(spawnPosition))
+            if (mazeGenerator.GetCellType(cell.x, cell.y) == CellType.Empty &&
+                IsPositionValid(spawnPosition) &&
+                IsPreferredSpawnCell(cell))
             {
-                return spawnPosition;
+                return cell;
             }
         }
 
-        return Vector3.zero;
+        List<Vector2Int> fallbackCells = mazeGenerator.GetEmptyCells();
+        return fallbackCells.Count > 0 ? fallbackCells[0] : new Vector2Int(1, 1);
     }
 
     private bool IsPositionValid(Vector3 newPosition)
@@ -324,6 +322,30 @@ public class TankSpawner : Singleton<TankSpawner>
         }
 
         return true;
+    }
+
+    private bool IsFarEnoughFromPlayer(Vector3 position, Transform player, float minimumDistance)
+    {
+        if (player == null)
+        {
+            return true;
+        }
+
+        return Vector3.Distance(position, player.position) >= minimumDistance;
+    }
+
+    private bool IsPreferredSpawnCell(Vector2Int cell)
+    {
+        int regionSize = mazeGenerator.GetEmptyRegionSize(cell);
+        int openScore = mazeGenerator.GetLocalOpenCellScore(cell);
+        return regionSize >= minimumSpawnRegionSize && openScore >= minimumSpawnOpenScore;
+    }
+
+    private int EvaluateSpawnCellScore(Vector2Int cell)
+    {
+        int regionSize = mazeGenerator.GetEmptyRegionSize(cell);
+        int openScore = mazeGenerator.GetLocalOpenCellScore(cell);
+        return regionSize * 10 + openScore;
     }
 
     private int GetAliveMobileBotCount()
@@ -341,6 +363,8 @@ public class TankSpawner : Singleton<TankSpawner>
 
         activeMobileBots.Remove(bot);
         activeSentryBots.Remove(bot);
+        OnBotDestroyed?.Invoke(bot);
+        SpawnNextMobileWave();
         UIManager.Instance.UpdateTextBotInMap();
     }
 
